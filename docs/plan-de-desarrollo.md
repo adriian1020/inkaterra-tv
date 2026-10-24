@@ -432,7 +432,7 @@ El objetivo es no construir sobre supuestos. Todo lo que depende de la TV se pru
 **Sprint 1: base y navegación (2 al 6 nov)**
 
 - Tema de Inkaterra (ver «Imagen de marca»): verde `#5A6A40`, Josefin Sans y Cinzel dentro de la app, y el logo.
-- Pantalla de inicio para TV, con secciones Videos, Fotos, Música e Información.
+- Pantalla de inicio para TV, con secciones Videos, Fotos y Música («Información» solo si se decide antes del sprint 4).
 - Navegación completa con el control remoto: foco siempre visible y tecla Atrás coherente.
 - Elegir idioma (español o inglés) y recordarlo.
 - Biblioteca local: leer la carpeta de contenido de la app, clasificar por tipo y aplicar las reglas de contenido (`dominio/`).
