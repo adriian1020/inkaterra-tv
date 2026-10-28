@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name" translatable="false">Inkaterra TV</string>
+    <string name="fila_destacados">Destacados</string>
+    <string name="fila_videos">Videos</string>
+    <string name="fila_fotos">Fotos</string>
+    <string name="fila_musica">Música</string>
+    <string name="tipo_video">Video</string>
+    <string name="tipo_foto">Foto</string>
+    <string name="tipo_musica">Música</string>
+    <string name="inicio_vacio">Todavía no hay contenido</string>
 </resources>

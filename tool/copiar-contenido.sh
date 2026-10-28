@@ -33,15 +33,16 @@ generar() {
   ff -f lavfi -i "mandelbrot=size=1920x1080:start_scale=0.5" -frames:v 1 \
     "$(ruta_local "$m/fotos/Vista panorámica del Valle Sagrado de los Incas desde la terraza del hotel.jpg")"
 
-  # Videos que se aceptan: H.264 en Full HD y HEVC en 4K, de 10 segundos.
+  # Videos que se aceptan: H.264 en Full HD y HEVC en 4K, de 10 segundos. Siempre yuv420p: con
+  # una fuente RGB ffmpeg elige 4:4:4, que el decodificador de la TV no lee.
   ff -f lavfi -i "testsrc2=size=1920x1080:rate=30" -f lavfi -i "sine=frequency=330" -t 10 \
-    -c:v libx264 -preset ultrafast -c:a aac "$(ruta_local "$m/videos/Atardecer en Machu Picchu.mp4")"
+    -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a aac "$(ruta_local "$m/videos/Atardecer en Machu Picchu.mp4")"
   ff -f lavfi -i "smptehdbars=size=3840x2160:rate=30" -f lavfi -i "sine=frequency=440" -t 10 \
-    -c:v libx265 -preset ultrafast -tag:v hvc1 -c:a aac "$(ruta_local "$m/videos/Río Madre de Dios.mp4")"
+    -c:v libx265 -preset ultrafast -pix_fmt yuv420p -tag:v hvc1 -c:a aac "$(ruta_local "$m/videos/Río Madre de Dios.mp4")"
   # Videos que se rechazan: 8K y AV1.
-  ff -f lavfi -i "testsrc2=size=7680x4320:rate=30" -t 2 -c:v libx265 -preset ultrafast -tag:v hvc1 \
+  ff -f lavfi -i "testsrc2=size=7680x4320:rate=30" -t 2 -c:v libx265 -preset ultrafast -pix_fmt yuv420p -tag:v hvc1 \
     "$(ruta_local "$m/videos/Ocho K.mp4")"
-  ff -f lavfi -i "testsrc2=size=1920x1080:rate=30" -t 2 -c:v libsvtav1 "$(ruta_local "$m/videos/Selva en AV1.mkv")"
+  ff -f lavfi -i "testsrc2=size=1920x1080:rate=30" -t 2 -c:v libsvtav1 -pix_fmt yuv420p "$(ruta_local "$m/videos/Selva en AV1.mkv")"
 
   # Música: una con la carátula incrustada y otra sin ella.
   ff -f lavfi -i "sine=frequency=262:duration=20" -i "$(ruta_local "$m/fotos/Reserva Amazónica 01.jpg")" \
@@ -51,7 +52,7 @@ generar() {
   # Promociones: una foto y un video.
   ff -f lavfi -i "mandelbrot=size=1920x1080:start_scale=1.5" -frames:v 1 "$(ruta_local "$m/promociones/Oferta spa.jpg")"
   ff -f lavfi -i "rgbtestsrc=size=1920x1080:rate=30" -f lavfi -i "sine=frequency=523" -t 10 \
-    -c:v libx264 -preset ultrafast -c:a aac "$(ruta_local "$m/promociones/Cena en la selva.mp4")"
+    -c:v libx264 -preset ultrafast -pix_fmt yuv420p -c:a aac "$(ruta_local "$m/promociones/Cena en la selva.mp4")"
 }
 
 [ -d "$muestras" ] || generar

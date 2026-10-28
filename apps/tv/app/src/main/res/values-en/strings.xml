@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="fila_destacados">Featured</string>
+    <string name="fila_videos">Videos</string>
+    <string name="fila_fotos">Photos</string>
+    <string name="fila_musica">Music</string>
+    <string name="tipo_video">Video</string>
+    <string name="tipo_foto">Photo</string>
+    <string name="tipo_musica">Music</string>
+    <string name="inicio_vacio">No content yet</string>
+</resources>

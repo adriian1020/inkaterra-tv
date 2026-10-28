@@ -10,6 +10,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Typography
 import androidx.tv.material3.darkColorScheme
@@ -49,7 +50,14 @@ private val tipografia =
     Typography().run {
         fun titulo(estilo: TextStyle) = estilo.copy(fontFamily = familiaTitulos)
 
-        fun texto(estilo: TextStyle) = estilo.copy(fontFamily = familiaTexto)
+        // Las tildes de las mayúsculas de Josefin Sans («Á») suben más que la línea: sin recortar el
+        // interlineado arriba y con un poco más de alto, no se cortan en los textos con «…».
+        fun texto(estilo: TextStyle) =
+            estilo.copy(
+                fontFamily = familiaTexto,
+                lineHeight = estilo.fontSize * 1.6f,
+                lineHeightStyle = LineHeightStyle(LineHeightStyle.Alignment.Center, LineHeightStyle.Trim.None),
+            )
         Typography(
             displayLarge = titulo(displayLarge),
             displayMedium = titulo(displayMedium),
