@@ -121,4 +121,34 @@ class NavegacionTest {
         atras()
         assertTrue(regla.activity.isFinishing)
     }
+
+    // Mientras se pasa a lo abierto, el inicio ya no responde: un Enter de más no abre dos veces.
+    @Test
+    fun enterDosVecesAbreUnaSola() {
+        abrir()
+        regla.mainClock.autoAdvance = false
+        regla.onRoot().performKeyInput { pressKey(Key.Enter) }
+        regla.mainClock.advanceTimeBy(100)
+        regla.onRoot().performKeyInput { pressKey(Key.Enter) }
+        regla.mainClock.autoAdvance = true
+        regla.waitForIdle()
+        atras()
+        regla.onNodeWithTag("abrir-titulo").assertDoesNotExist()
+        foco("tarjeta-DESTACADOS-0")
+    }
+
+    // Atrás enseguida de abrir cierra lo abierto, aunque se venga de otra fila.
+    @Test
+    fun atrasEnseguidaVuelveALaTarjeta() {
+        abrir()
+        tecla(Key.DirectionDown)
+        regla.mainClock.autoAdvance = false
+        regla.onRoot().performKeyInput { pressKey(Key.Enter) }
+        regla.mainClock.advanceTimeBy(100)
+        regla.runOnUiThread { regla.activity.onBackPressedDispatcher.onBackPressed() }
+        regla.mainClock.autoAdvance = true
+        regla.waitForIdle()
+        regla.onNodeWithTag("abrir-titulo").assertDoesNotExist()
+        foco("tarjeta-VIDEOS-0")
+    }
 }

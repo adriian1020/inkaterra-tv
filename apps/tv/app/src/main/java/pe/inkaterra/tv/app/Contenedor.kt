@@ -17,6 +17,18 @@ class Contenedor(
     raiz: File = context.getExternalFilesDir("contenido") ?: File(context.filesDir, "contenido"),
 ) {
     val biblioteca = Biblioteca(CarpetaContenido(raiz), LectorMetadatosAndroid())
-    val miniaturas = Miniaturas(GeneradorMiniaturaAndroid(), File(context.cacheDir, "miniaturas"))
+    val miniaturas = miniaturasDelProceso(context)
     val idioma: AjusteIdioma = AjusteIdiomaAndroid()
+
+    private companion object {
+        // Una sola por proceso: la actividad se recrea (al cambiar el idioma) y una instancia nueva
+        // traería su propio límite de dos, sumando decodificaciones 4K a las que siguen en curso.
+        @Volatile private var miniaturas: Miniaturas? = null
+
+        fun miniaturasDelProceso(context: Context): Miniaturas =
+            miniaturas ?: synchronized(this) {
+                miniaturas ?: Miniaturas(GeneradorMiniaturaAndroid(), File(context.cacheDir, "miniaturas"))
+                    .also { miniaturas = it }
+            }
+    }
 }

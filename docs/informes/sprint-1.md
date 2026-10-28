@@ -4,7 +4,7 @@
 (sale de `sprint-0/integracion`)
 **Periodo:** 28 de octubre de 2026 (pasos 1.1 a 1.7) · **Responsable:** Adrián
 **Equipo de pruebas:** Xiaomi TV Box S (Google TV, Android 14), por la red en `192.168.31.242`
-**Estado:** sprint 1 completo. Falta la revisión final de la rama, subirla y abrir su PR hacia
+**Estado:** sprint 1 completo y revisado. Falta subir la rama y abrir su PR hacia
 `main` después del PR del sprint 0.
 
 ---
@@ -98,10 +98,11 @@ las fotos y videos reales de Inkaterra se verá con sus imágenes.
 |---|---|
 | Formato (`ktlintCheck`) | ✅ Sin problemas |
 | Análisis (`lintDebug`, avisos como errores) | ✅ Sin problemas |
-| Pruebas en la PC (`testDebugUnitTest`) | ✅ 45 de 45 |
+| Pruebas en la PC (`testDebugUnitTest`) | ✅ 49 de 49 |
 | APK (`assembleDebug`) | ✅ |
 | Pruebas en el Xiaomi (`tool/tv.sh probar`) | ✅ 9 de 9 (`VolumenesUsbTest` excluida, sin USB); 4K sigue en 0 cuadros perdidos |
 | CI en GitHub | ⏳ Al subir la rama |
+| Revisión final de la rama (revisor aparte) | ✅ 0 críticos · 2 importantes corregidos · 7 menores anotados |
 
 Forma de trabajo en cada paso: rama propia → prueba primero → código → chequeos del CI → prueba
 en la TV → commit → unión a `sprint-1/integracion`.
@@ -132,6 +133,8 @@ en la TV → commit → unión a `sprint-1/integracion`.
 | La tilde de «Árbol» se cortaba en la tarjeta | Interlineado 1,6 sin recorte en los estilos de Josefin Sans |
 | En las pruebas de la PC, `Key.Back` no llegaba a la actividad | Se usa el despachador de Atrás de la actividad, como la tecla real |
 | `FlujoSprint1Test` no lograba borrar el idioma | Desde Android 13 se borra con el `LocaleManager` del sistema |
+| Revisión: la misma miniatura se podía generar dos veces a la vez (y quedar en verde) | Un candado por archivo y una sola instancia de `Miniaturas` por proceso |
+| Revisión: durante el fundido de 700 ms, un Enter de más abría dos veces | Sin fundido entre pantallas, y el inicio solo abre si es la pantalla activa |
 
 ---
 
@@ -143,6 +146,11 @@ en la TV → commit → unión a `sprint-1/integracion`.
 - **Contenido real:** las capturas usan muestras generadas; faltan fotos y videos de Inkaterra.
 - **PR del sprint 0** sin abrir (falta iniciar sesión en `gh`); el del sprint 1 va después.
 - Los mismos del sprint 0: memoria USB (D-18), pantalla principal (D-14) y la TCL del piloto.
+- **Menores de la revisión, para más adelante:** el área destacada muestra un instante la imagen
+  anterior; las canciones sin carátula vuelven a pasar por el generador; pantalla oscura sin
+  aviso mientras carga la biblioteca; las filas pierden su desplazamiento al volver; los videos
+  verticales se ven borrosos en el área destacada; «Tour 10» se ordena antes que «Tour 2»; los
+  cambios en la carpeta con la app abierta no se ven hasta reabrirla.
 
 ---
 
