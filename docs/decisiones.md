@@ -153,3 +153,18 @@ Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
 - **No se acepta AV1:** el Xiaomi lo decodifica, pero solo hasta 40 Mbps declarados, y la TCL
   podría no tenerlo. Se revisa si algún video real lo necesita.
 - **Pendiente:** repetir la prueba de VP9 en la TCL del piloto (sprint 5).
+
+## D-18. Memorias USB: código listo, prueba en la TV pendiente
+
+- **Qué hay:** `VolumenesUsb` lista las memorias montadas (`StorageManager`, solo las
+  extraíbles) y avisa cuando se conectan o se retiran. Lee la carpeta de la memoria directo,
+  sin copiar nada (D-10). `VolumenesUsbTest` comprueba en la TV que se lean los archivos y que
+  las fotos HEIC se abran.
+- **Qué pasó en el Xiaomi (28 de octubre):** la memoria de prueba (Dahua U156 de 8 GB, FAT32,
+  que la PC lee bien) no apareció ni como dispositivo en el puerto USB de la caja, conectada
+  directo; Android solo veía el adaptador wifi interno. No es un problema de formato: con un
+  formato que no lee, Android igual mostraría el disco.
+- **Pendiente para el sprint 3 (USB del huésped):** repetir con otra memoria, con el Xiaomi en
+  su propio cargador o con un hub USB con alimentación, y luego en la TCL. Hasta entonces no
+  se sabe qué formatos lee (FAT32, exFAT, NTFS) ni si hace falta pedir permisos de fotos y
+  videos.
