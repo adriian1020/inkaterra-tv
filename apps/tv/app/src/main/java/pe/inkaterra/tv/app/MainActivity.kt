@@ -13,6 +13,6 @@ class MainActivity : ComponentActivity() {
         // Provisional hasta el sprint 4: la pantalla queda encendida mientras la app está al frente.
         // Desde el sprint 4 se enciende solo durante las promociones.
         mantenerPantallaEncendida(this, encendida = true)
-        setContent { InicioPantalla() }
+        setContent { TemaInkaterra { InicioPantalla() } }
     }
 }

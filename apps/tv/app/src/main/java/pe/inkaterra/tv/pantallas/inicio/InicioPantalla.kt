@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import pe.inkaterra.tv.BuildConfig
 import pe.inkaterra.tv.R
@@ -27,7 +28,11 @@ fun InicioPantalla() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(text = stringResource(R.string.app_name), color = Color.White, fontSize = 48.sp)
+        Text(
+            text = stringResource(R.string.app_name),
+            color = Color.White,
+            style = MaterialTheme.typography.displayMedium,
+        )
         Text(
             text = textoVersion(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
             color = Color.White.copy(alpha = 0.6f),

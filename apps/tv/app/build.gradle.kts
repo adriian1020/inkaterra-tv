@@ -37,6 +37,12 @@ android {
         // El banner de TV va solo en xhdpi (320 × 180), como pide la guía de Android TV.
         disable += "IconMissingDensityFolder"
     }
+
+    // Robolectric necesita los recursos (fuentes y cadenas) en las pruebas de la PC. El Android que
+    // simula está fijo en src/test/resources/robolectric.properties.
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 }
 
 dependencies {
@@ -52,6 +58,8 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.test.ext.junit)
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
