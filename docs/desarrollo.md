@@ -8,8 +8,8 @@ La app sigue las convenciones de asistencia-movil y asistencia-vip: todo en espa
 - JDK 21 (el bytecode sale para Java 17) y Android SDK con la plataforma 37.
 - Gradle 9.7.1 (wrapper en `apps/tv/`), AGP 9.4.1 con su Kotlin integrado y el plugin de
   Compose de Kotlin 2.4.0.
-- `apps/tv/local.properties` con `sdk.dir=C:/Users/<usuario>/AppData/Local/Android/Sdk`
-  (git lo ignora).
+- `apps/tv/local.properties` con `sdk.dir=C\:/Users/<usuario>/AppData/Local/Android/Sdk` (los
+  dos puntos van escapados; git lo ignora).
 - Las dependencias van con versión exacta en `apps/tv/gradle/libs.versions.toml`. Subir una es
   un PR propio.
 
