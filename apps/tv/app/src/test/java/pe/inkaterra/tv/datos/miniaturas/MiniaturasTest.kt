@@ -126,4 +126,26 @@ class MiniaturasTest {
         assertEquals(2, maximo.get())
         assertEquals(5, generador.llamadas.get())
     }
+
+    // El área destacada y su tarjeta piden la misma miniatura en el mismo cuadro: se genera una
+    // sola vez y las dos reciben el archivo.
+    @Test
+    fun mismoElementoALaVezSeGeneraUnaVez() {
+        val soltar = CountDownLatch(1)
+        val generador =
+            GeneradorFalso {
+                soltar.await(5, TimeUnit.SECONDS)
+                imagen()
+            }
+        val m = Miniaturas(generador, temporal.root, Dispatchers.IO)
+        runBlocking {
+            val pedidos = (1..2).map { async(Dispatchers.IO) { m.de(elemento()) } }
+            Thread.sleep(300)
+            soltar.countDown()
+            val archivos = pedidos.awaitAll()
+            assertNotNull(archivos[0])
+            assertEquals(archivos[0], archivos[1])
+        }
+        assertEquals(1, generador.llamadas.get())
+    }
 }

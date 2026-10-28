@@ -3,9 +3,12 @@
 package pe.inkaterra.tv.app
 
 import android.net.Uri
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -28,14 +31,23 @@ fun Navegacion(
 ) {
     val navegador = rememberNavController()
     val inicial = if (idioma.actual() == null) "idioma" else "inicio"
-    NavHost(navegador, startDestination = inicial) {
+    // Sin fundido entre pantallas: durante los 700 ms del fundido, la pantalla que se va seguía
+    // recibiendo Enter y Atrás del control.
+    NavHost(
+        navegador,
+        startDestination = inicial,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None },
+    ) {
         composable("idioma") {
             IdiomaPantalla { elegido ->
                 idioma.cambiar(elegido)
                 navegador.navigate("inicio") { popUpTo("idioma") { inclusive = true } }
             }
         }
-        composable("inicio") {
+        composable("inicio") { entrada ->
             val modelo = viewModel { InicioModelo(biblioteca) }
             val estado by modelo.estado.collectAsState()
             // El botón ofrece el otro idioma.
@@ -45,7 +57,12 @@ fun Navegacion(
                 miniaturas = miniaturas,
                 otroIdioma = otro,
                 alCambiarIdioma = { idioma.cambiar(otro) },
-                alElegir = { navegador.navigate("abrir/${Uri.encode(it.archivo.ruta)}") },
+                // Solo si el inicio es la pantalla activa: un Enter de más no abre dos veces.
+                alElegir = {
+                    if (entrada.lifecycle.currentState == Lifecycle.State.RESUMED) {
+                        navegador.navigate("abrir/${Uri.encode(it.archivo.ruta)}")
+                    }
+                },
             )
         }
         composable("abrir/{ruta}") { entrada ->
