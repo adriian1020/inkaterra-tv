@@ -1,7 +1,6 @@
 // El inicio estilo Netflix con el control remoto (D-20): foco, filas, área destacada y Atrás.
 package pe.inkaterra.tv.pantallas
 
-import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.assertIsFocused
@@ -13,7 +12,6 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.Dispatchers
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -23,13 +21,7 @@ import org.robolectric.annotation.Config
 import pe.inkaterra.tv.app.Navegacion
 import pe.inkaterra.tv.app.TemaInkaterra
 import pe.inkaterra.tv.datos.biblioteca.ArchivoLocal
-import pe.inkaterra.tv.datos.biblioteca.Biblioteca
-import pe.inkaterra.tv.datos.biblioteca.Elemento
-import pe.inkaterra.tv.datos.biblioteca.FuenteFalsa
-import pe.inkaterra.tv.datos.biblioteca.LectorFalso
-import pe.inkaterra.tv.datos.biblioteca.archivo
-import pe.inkaterra.tv.datos.miniaturas.GeneradorMiniatura
-import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.sistema.idioma.Idioma
 
 @RunWith(AndroidJUnit4::class)
 @Config(qualifiers = "es")
@@ -40,23 +32,11 @@ class NavegacionTest {
     @get:Rule(order = 1)
     val regla = createAndroidComposeRule<ComponentActivity>()
 
-    private val completa =
-        listOf(
-            archivo("Oferta spa.jpg", esPromocion = true),
-            archivo("Reserva Amazónica 01.jpg", esPromocion = true),
-            archivo("Atardecer en Machu Picchu.mp4"),
-            archivo("Río Madre de Dios.mp4"),
-            archivo("Selva.mp3"),
-        )
-
-    private fun abrir(archivos: List<ArchivoLocal> = completa) {
-        val biblioteca = Biblioteca(FuenteFalsa(archivos), LectorFalso(emptyMap()), Dispatchers.Unconfined)
-        val sinImagen =
-            object : GeneradorMiniatura {
-                override fun generar(elemento: Elemento): Bitmap? = null
-            }
-        val miniaturas = Miniaturas(sinImagen, temporal.root, Dispatchers.Unconfined)
-        regla.setContent { TemaInkaterra { Navegacion(biblioteca, miniaturas) } }
+    private fun abrir(archivos: List<ArchivoLocal> = contenidoDePrueba) {
+        val biblioteca = bibliotecaDePrueba(archivos)
+        val miniaturas = miniaturasSinImagen(temporal.root)
+        val idioma = AjusteIdiomaFalso(Idioma.ESPANOL)
+        regla.setContent { TemaInkaterra { Navegacion(biblioteca, miniaturas, idioma) } }
         regla.waitForIdle()
     }
 

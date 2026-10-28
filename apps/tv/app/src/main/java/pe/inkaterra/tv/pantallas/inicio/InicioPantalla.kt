@@ -1,7 +1,8 @@
 // Inicio estilo Netflix (D-20): arriba el área destacada con lo que tiene el foco, abajo las filas
 // de tarjetas. El foco arranca en la primera tarjeta, vuelve a la tarjeta de origen al regresar
 // de lo que se abrió, y Atrás fuera de la primera fila sube a la primera tarjeta; en la primera
-// fila, Atrás no se intercepta y la app se cierra como cualquier app de Google TV.
+// fila, Atrás no se intercepta y la app se cierra como cualquier app de Google TV. Arriba a la
+// derecha, el botón para cambiar de idioma.
 package pe.inkaterra.tv.pantallas.inicio
 
 import androidx.activity.compose.BackHandler
@@ -37,6 +38,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.tv.material3.Button
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import kotlinx.coroutines.delay
@@ -45,6 +47,7 @@ import pe.inkaterra.tv.R
 import pe.inkaterra.tv.app.ColoresInkaterra
 import pe.inkaterra.tv.datos.biblioteca.Elemento
 import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.sistema.idioma.Idioma
 
 // El área destacada cambia cuando el foco lleva este tiempo quieto, para que no parpadee al
 // recorrer una fila rápido.
@@ -54,19 +57,34 @@ private const val DEMORA_DESTACADO_MS = 500L
 fun InicioPantalla(
     estado: EstadoInicio,
     miniaturas: Miniaturas,
+    otroIdioma: Idioma,
+    alCambiarIdioma: () -> Unit,
     alElegir: (Elemento) -> Unit,
 ) {
+    var enBotonIdioma by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxSize().background(ColoresInkaterra.fondo)) {
-        when {
-            estado !is EstadoInicio.Listo -> Unit
-            estado.filas.isEmpty() ->
-                Text(
-                    text = stringResource(R.string.inicio_vacio),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = ColoresInkaterra.crema,
-                    modifier = Modifier.align(Alignment.Center),
-                )
-            else -> InicioConFilas(estado.filas, miniaturas, alElegir)
+        if (estado !is EstadoInicio.Listo) return@Box
+        if (estado.filas.isEmpty()) {
+            Text(
+                text = stringResource(R.string.inicio_vacio),
+                style = MaterialTheme.typography.headlineMedium,
+                color = ColoresInkaterra.crema,
+                modifier = Modifier.align(Alignment.Center),
+            )
+        } else {
+            InicioConFilas(estado.filas, miniaturas, fueraDeLasFilas = enBotonIdioma, alElegir)
+        }
+        // Arriba a la derecha, sobre el área destacada; se llega con Arriba desde la primera fila.
+        Button(
+            onClick = alCambiarIdioma,
+            modifier =
+                Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(24.dp)
+                    .onFocusChanged { enBotonIdioma = it.isFocused }
+                    .testTag("cambiar-idioma"),
+        ) {
+            Text(stringResource(if (otroIdioma == Idioma.INGLES) R.string.idioma_ingles else R.string.idioma_espanol))
         }
     }
 }
@@ -75,6 +93,7 @@ fun InicioPantalla(
 private fun InicioConFilas(
     filas: List<Fila>,
     miniaturas: Miniaturas,
+    fueraDeLasFilas: Boolean,
     alElegir: (Elemento) -> Unit,
 ) {
     // Tarjeta con el foco: se guarda para devolverle el foco al volver de lo que se abrió.
@@ -103,7 +122,7 @@ private fun InicioConFilas(
         solicitantes[f to c]?.requestFocus()
     }
     LaunchedEffect(Unit) { enfocar(fila.coerceIn(filas.indices), columna) }
-    BackHandler(enabled = fila > 0) { alcance.launch { enfocar(0, 0) } }
+    BackHandler(enabled = fila > 0 || fueraDeLasFilas) { alcance.launch { enfocar(0, 0) } }
 
     Column(Modifier.fillMaxSize()) {
         AreaDestacada(destacado, miniaturas, Modifier.fillMaxWidth().weight(1f))
