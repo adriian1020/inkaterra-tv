@@ -17,6 +17,9 @@ ffmpeg=$(command -v ffmpeg || echo "$LOCALAPPDATA/Microsoft/WinGet/Links/ffmpeg.
 [ -x "$ffmpeg" ] || { echo "Falta ffmpeg: winget install --id Gyan.FFmpeg -e" >&2; exit 1; }
 mkdir -p "$salida"
 
+# ffmpeg y adb son programas de Windows: las rutas locales van en formato de Windows.
+ruta_local() { cygpath -w "$1" 2>/dev/null || echo "$1"; }
+
 # nombre  códec  tasa(Mbps)  fps  formato de píxel
 casos=(
   "h264-20m.mp4    libx264 20  30 yuv420p"
@@ -27,25 +30,34 @@ casos=(
   "hevc-60m.mp4    libx265 60  30 yuv420p"
   "hevc-60fps-40m.mp4 libx265 40 60 yuv420p"
   "hevc10-120m.mkv libx265 120 30 yuv420p10le"
+  "vp9-20m.webm    libvpx-vp9 20 30 yuv420p"
+  "vp9-40m.webm    libvpx-vp9 40 30 yuv420p"
+  "vp9-60m.webm    libvpx-vp9 60 30 yuv420p"
 )
 
 for caso in "${casos[@]}"; do
   read -r nombre codec tasa fps pixel <<<"$caso"
   [ -f "$salida/$nombre" ] && continue
   echo "Generando $nombre…"
-  etiqueta=()
-  [ "$codec" = libx265 ] && etiqueta=(-tag:v hvc1)
+  # Cada códec tiene sus propias opciones de velocidad; WEBM no admite audio AAC, lleva Opus.
+  case "$codec" in
+    libx265) opciones=(-preset ultrafast -tag:v hvc1) ;;
+    libvpx-vp9) opciones=(-deadline realtime -cpu-used 8 -row-mt 1) ;;
+    *) opciones=(-preset ultrafast) ;;
+  esac
+  audio=(-c:a aac -b:a 128k)
+  [ "${nombre##*.}" = webm ] && audio=(-c:a libopus -b:a 128k)
   "$ffmpeg" -hide_banner -loglevel error -y \
     -f lavfi -i "testsrc2=size=3840x2160:rate=$fps,noise=alls=12:allf=t" \
     -f lavfi -i "sine=frequency=440:sample_rate=48000" \
-    -t "$segundos" -c:v "$codec" -preset ultrafast -pix_fmt "$pixel" "${etiqueta[@]}" \
+    -t "$segundos" -c:v "$codec" "${opciones[@]}" -pix_fmt "$pixel" \
     -b:v "${tasa}M" -minrate "${tasa}M" -maxrate "${tasa}M" -bufsize "$((tasa * 2))M" \
-    -c:a aac -b:a 128k "$salida/$nombre"
+    "${audio[@]}" "$(ruta_local "$salida/$nombre")"
 done
 
 adb connect "$TV" >/dev/null 2>&1 || true
 adb -s "$TV" shell mkdir -p "$destino"
 for archivo in "$salida"/*; do
-  adb -s "$TV" push "$(cygpath -w "$archivo" 2>/dev/null || echo "$archivo")" "$destino/" >/dev/null
+  adb -s "$TV" push "$(ruta_local "$archivo")" "$destino/" >/dev/null
   echo "Copiado $(basename "$archivo")"
 done

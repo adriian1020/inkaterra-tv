@@ -141,3 +141,15 @@ Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
 - **Decisión:** para que las promociones sigan sin fin (D-09), al instalar cada TV también se
   corre `adb shell settings put secure sleep_timeout -1`. Lo que apague la TV de noche lo hace
   el huésped con el control.
+
+## D-19. Se acepta WEBM con VP9
+
+- **Qué:** además de MP4, MKV y MOV con H.264 o HEVC, se aceptan videos **WEBM con VP9**
+  (`video/x-vnd.on2.vp9`), con los mismos límites: hasta 3840 × 2160 y 60 Mbps (D-13). Vale
+  para el contenido del hotel y para la USB del huésped.
+- **Por qué:** pedido de Adrián. Los celulares Android y muchas descargas de internet graban o
+  entregan WEBM con VP9 (la memoria de prueba traía uno). En el Xiaomi, VP9 4K a 20, 40 y
+  60 Mbps se reprodujo sin perder cuadros con `c2.amlogic.vp9.decoder`, igual que H.264 y HEVC.
+- **No se acepta AV1:** el Xiaomi lo decodifica, pero solo hasta 40 Mbps declarados, y la TCL
+  podría no tenerlo. Se revisa si algún video real lo necesita.
+- **Pendiente:** repetir la prueba de VP9 en la TCL del piloto (sprint 5).

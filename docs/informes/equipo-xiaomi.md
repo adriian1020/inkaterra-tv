@@ -48,7 +48,10 @@ con ruido para que la tasa real sea la pedida) se reprodujo 20 s en pantalla con
 | HEVC, 60 Mbps | `c2.amlogic.hevc.decoder` | 588 | 0 |
 | HEVC, 60 fps, 40 Mbps | `c2.amlogic.hevc.decoder` | 1177 | 0 |
 | HEVC 10 bits, 120 Mbps (MKV) | `c2.amlogic.hevc.decoder` | 584 | 0 |
+| VP9, 20 Mbps (WEBM) | `c2.amlogic.vp9.decoder` | 589 | 0 |
+| VP9, 40 Mbps (WEBM) | `c2.amlogic.vp9.decoder` | 590 | 0 |
+| VP9, 60 Mbps (WEBM) | `c2.amlogic.vp9.decoder` | 589 | 0 |
 
 Un archivo dañado se registra como «no reproduce» y la prueba sigue
 (`videoImposibleSeRegistraYSigue`). La pantalla conectada es 1080p: Android decodifica el 4K y lo
-escala. Con esto se fija D-13 en 60 Mbps.
+escala. Con esto se fija D-13 en 60 Mbps. Las filas de VP9 se midieron después, para D-19.
