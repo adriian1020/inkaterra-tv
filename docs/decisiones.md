@@ -110,3 +110,34 @@ Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
   Google TV lo devuelve a `default` al reiniciar y el arranque sigue bloqueado.
 - **Decisión:** no se agrega el receptor. Abrir la app al encender solo es posible con la
   opción 2 o 3 de D-14, y esa decisión llega antes del sprint 5.
+
+## D-16. Protector de pantalla: sí, configurado por adb en cada TV
+
+- **Qué se probó (paso 0.6, Xiaomi con Google TV 14):** `ProtectorPantalla` (un `DreamService`)
+  activado con `adb shell settings put secure screensaver_components
+  pe.inkaterra.tv/.sistema.protector.ProtectorPantalla`. A 1 minuto sin uso en el inicio de
+  Google TV salió «Inkaterra TV» sobre el verde (`mWakefulness=Dreaming`).
+- **Decisión:** las promociones fuera de la app (CU-05, variante 1a) se muestran con este
+  protector. Google TV no deja elegirlo desde sus ajustes, así que al instalar cada TV se
+  corre:
+
+  ```bash
+  adb shell settings put secure screensaver_components pe.inkaterra.tv/.sistema.protector.ProtectorPantalla
+  adb shell settings put secure screensaver_enabled 1
+  adb shell settings put system screen_off_timeout 300000   # 5 minutos sin uso
+  ```
+
+- **Pendiente:** comprobarlo en la TCL del piloto (sprint 5); en algunas versiones de Google TV
+  el fabricante bloquea protectores de terceros.
+
+## D-17. Suspensión: la app la evita; fuera de la app hay que desactivarla
+
+- **Dentro de la app:** con `mantenerPantallaEncendida(activity, true)`
+  (`FLAG_KEEP_SCREEN_ON`), la TV siguió encendida 3 minutos con la suspensión a 2.
+- **Con el protector en pantalla:** la suspensión manda. Con `sleep_timeout` a 2 minutos la
+  TV se apagó a los 2 minutos aunque el protector estaba activo, y al apagarse corta la red
+  (adb queda desconectado). Con `sleep_timeout` en `-1` («nunca») el protector siguió 4
+  minutos sin apagarse.
+- **Decisión:** para que las promociones sigan sin fin (D-09), al instalar cada TV también se
+  corre `adb shell settings put secure sleep_timeout -1`. Lo que apague la TV de noche lo hace
+  el huésped con el control.
