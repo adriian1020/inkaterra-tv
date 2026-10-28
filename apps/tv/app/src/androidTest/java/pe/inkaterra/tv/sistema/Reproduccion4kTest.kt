@@ -1,11 +1,14 @@
 // Mide qué videos 4K reproduce fluido la TV: cada video de tool/videos-prueba.sh se reproduce
 // 20 s en pantalla con Media3 y se anotan el decodificador, los cuadros mostrados y los perdidos
-// en el registro con la etiqueta «Prueba4k». De aquí sale la tasa máxima D-13.
+// en el registro con la etiqueta «Prueba4k», uno por uno y con la hora. Una medición sin cuadros
+// de video o con la pantalla apagada no cuenta como fluida. De aquí sale la tasa máxima D-13.
 //   tool/videos-prueba.sh && tool/tv.sh probar pe.inkaterra.tv.sistema.Reproduccion4kTest
 package pe.inkaterra.tv.sistema
 
+import android.os.PowerManager
 import android.util.Log
 import android.view.SurfaceView
+import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams
 import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
@@ -15,13 +18,15 @@ import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import pe.inkaterra.tv.app.MainActivity
 import java.io.File
+import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -33,12 +38,27 @@ class Reproduccion4kTest {
         val mostrados: Int,
         val perdidos: Int,
         val error: String?,
+        val pantallaEncendida: Boolean,
     ) {
         val porcentajePerdidos: Double
             get() = if (mostrados + perdidos == 0) 0.0 else 100.0 * perdidos / (mostrados + perdidos)
+
+        // Sin decodificador de video, ExoPlayer reproduce solo el audio y no da error.
+        val valida: Boolean
+            get() = error == null && pantallaEncendida && decodificador != null && mostrados > 0
+
+        val estado: String
+            get() =
+                when {
+                    error != null -> "NO REPRODUCE: $error"
+                    !pantallaEncendida -> "INVÁLIDA: la TV estaba suspendida"
+                    !valida -> "NO REPRODUCE: sin cuadros de video"
+                    else -> "OK"
+                }
     }
 
     private val contexto = InstrumentationRegistry.getInstrumentation().targetContext
+    private val energia = contexto.getSystemService(PowerManager::class.java)
 
     @Test
     fun reproduceCadaVideo() {
@@ -56,18 +76,21 @@ class Reproduccion4kTest {
                 .launch(
                     MainActivity::class.java,
                 ).use { escena -> videos.map { medir(escena, it) } }
-        mediciones.forEach {
-            Log.i(
-                "Prueba4k",
-                "${it.archivo} | ${it.decodificador ?: "-"} | mostrados=${it.mostrados} | perdidos=${it.perdidos} | " +
-                    "%.2f %%".format(it.porcentajePerdidos) + (it.error?.let { e -> " | NO REPRODUCE: $e" } ?: ""),
-            )
-        }
         listOf("h264-20m.mp4", "hevc-20m.mp4").forEach { nombre ->
             val medicion = mediciones.firstOrNull { it.archivo == nombre }
             assertNotNull("Falta $nombre", medicion)
-            assertEquals("$nombre no debe fallar", null, medicion?.error)
+            assertTrue("$nombre: ${medicion?.estado}", medicion?.valida == true)
         }
+    }
+
+    // Si la TV no tiene decodificador para un video, ExoPlayer reproduce solo el audio sin dar
+    // error: eso no puede quedar como «fluido». solo-audio.m4a lo genera tool/videos-prueba.sh.
+    @Test
+    fun sinCuadrosDeVideoNoCuentaComoFluido() {
+        val soloAudio = File(requireNotNull(contexto.getExternalFilesDir("prueba-4k")), "solo-audio.m4a")
+        assertTrue("Falta $soloAudio: correr tool/videos-prueba.sh", soloAudio.isFile)
+        val medicion = ActivityScenario.launch(MainActivity::class.java).use { medir(it, soloAudio) }
+        assertFalse("Sin cuadros de video no es una medición válida", medicion.valida)
     }
 
     @Test
@@ -82,12 +105,15 @@ class Reproduccion4kTest {
         archivo: File,
     ): Medicion {
         val fin = CountDownLatch(1)
+        var superficie: SurfaceView? = null
         var reproductor: ExoPlayer? = null
         var decodificador: String? = null
         var error: String? = null
+        val encendidaAlEmpezar = energia.isInteractive
+        val inicio = LocalTime.now().truncatedTo(ChronoUnit.SECONDS)
 
         escena.onActivity { actividad ->
-            val superficie = SurfaceView(actividad)
+            superficie = SurfaceView(actividad)
             actividad.addContentView(superficie, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
             reproductor =
                 ExoPlayer.Builder(actividad).build().apply {
@@ -130,10 +156,23 @@ class Reproduccion4kTest {
                     mostrados = contadores?.renderedOutputBufferCount ?: 0,
                     perdidos = contadores?.droppedBufferCount ?: 0,
                     error = error,
+                    pantallaEncendida = encendidaAlEmpezar && energia.isInteractive,
                 )
             reproductor?.release()
+            // Cada video dibuja en su propia superficie: si se acumulan, el siguiente puede quedar tapado.
+            superficie?.let { (it.parent as? ViewGroup)?.removeView(it) }
         }
-        return requireNotNull(medicion)
+        return requireNotNull(medicion).also { registrar(inicio, it) }
+    }
+
+    // Se registra cada video apenas termina: si la TV se cae a mitad, quedan los anteriores.
+    private fun registrar(
+        inicio: LocalTime,
+        m: Medicion,
+    ) {
+        val cuadros = "mostrados=${m.mostrados} | perdidos=${m.perdidos}"
+        val porcentaje = "%.2f %%".format(m.porcentajePerdidos)
+        Log.i("Prueba4k", "$inicio | ${m.archivo} | ${m.decodificador ?: "-"} | $cuadros | $porcentaje | ${m.estado}")
     }
 
     private companion object {

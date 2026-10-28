@@ -108,7 +108,7 @@ responde con pruebas en la TV real lo que el resto del proyecto necesitaba saber
 Forma de trabajo en cada paso: rama propia → prueba primero → código → chequeos del CI → prueba
 en la TV → commit → unión a `sprint-0/integracion`.
 
-**Tamaño del cambio frente a `main`:** 42 archivos, unas 3 000 líneas, la mayoría
+**Tamaño del cambio frente a `main`:** 43 archivos, unas 3 000 líneas, la mayoría
 documentación (plan, planes de los sprints 0 y 1, decisiones e informes).
 
 ---
@@ -137,7 +137,7 @@ documentación (plan, planes de los sprints 0 y 1, decisiones e informes).
 | Un commit entró con errores de ktlint porque el comando no cortó | Se corrigió en el commit siguiente; desde entonces el CI local corre con `pipefail` |
 | Git Bash cambiaba las rutas de la TV (`/sdcard/...`) y adb no entendía las de Git Bash | `MSYS_NO_PATHCONV=1` y rutas locales con `cygpath -w` |
 | La medición 4K dio 0 cuadros: la TV estaba suspendida | `tool/tv.sh probar` despierta la TV antes de las pruebas |
-| La prueba de suspensión dejó el Xiaomi apagado y sin red con los ajustes de prueba | Adrián lo despertó y se restauró; los scripts reconectan antes de restaurar |
+| La prueba de suspensión dejó el Xiaomi apagado y sin red con los ajustes de prueba | Adrián lo despertó y se restauró; desde entonces se reconecta antes de restaurar los ajustes |
 | YouTube bloqueó la descarga de un video de Inkaterra (verificación anti-robots) | No se forzó; los videos reales se piden a marketing o se usan videos con licencia libre |
 
 ---

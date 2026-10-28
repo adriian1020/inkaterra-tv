@@ -332,14 +332,14 @@ stateDiagram-v2
 
 | Tipo | Formatos | Límites |
 | --- | --- | --- |
-| Video | MP4 o MKV con H.264 o H.265 (HEVC), y WEBM con VP9 (D-19) | Hasta 3840 × 2160 (4K). La tasa de datos máxima se fija en la Fase 0 según lo que reproduzca fluido la TCL |
+| Video | MP4, MKV o MOV con H.264 o H.265 (HEVC), y WEBM con VP9 (D-19) | Hasta 3840 × 2160 (4K) y 60 Mbps (D-13, medido en el sprint 0) |
 | Foto | JPG, PNG o WebP | Si pasa de 4K, se reduce al mostrarla |
 | Música | MP3, AAC (M4A) o FLAC | — |
 | Promoción | Un video o una foto con su duración en pantalla | Mismas reglas que video y foto |
 
 Un archivo que no cumple se rechaza con un mensaje claro («El video mide 7680 × 4320; el máximo es 4K»), nunca en silencio.
 
-**USB del huésped:** además se aceptan los formatos de los celulares y cámaras: fotos **HEIC** y videos **MOV** (H.264 o HEVC) y **WEBM** (VP9). La memoria puede venir en FAT32 o exFAT; NTFS depende de la TV (se comprueba en la Fase 0).
+**USB del huésped:** además se aceptan los formatos de los celulares y cámaras: fotos **HEIC** y videos de celular en MOV o WEBM, que ya entran en las reglas de video. La memoria puede venir en FAT32 o exFAT; NTFS depende de la TV (se comprueba en la Fase 0).
 
 ## Fases y sprints
 
