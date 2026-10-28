@@ -38,8 +38,10 @@ case "${1:-}" in
     adb -s "$TV" install -r -t -g app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >/dev/null
     # Con la TV suspendida las pruebas corren pero no se dibuja nada: despertarla primero.
     adb -s "$TV" shell input keyevent KEYCODE_WAKEUP
+    # EXCLUIR=clase salta una prueba que necesita algo que no está (por ejemplo, una USB).
     filtro=()
     [ -n "${2:-}" ] && filtro=(-e class "$2")
+    [ -n "${EXCLUIR:-}" ] && filtro+=(-e notClass "$EXCLUIR")
     salida=$(adb -s "$TV" shell am instrument -w "${filtro[@]}" pe.inkaterra.tv.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r')
     echo "$salida"
     grep -q '^OK (' <<<"$salida"

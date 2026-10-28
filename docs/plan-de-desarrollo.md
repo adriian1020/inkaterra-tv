@@ -673,9 +673,13 @@ Una historia está terminada cuando:
 
 - [x]  Cerrar las decisiones de la Fase 0 (equipo, Product Owner, marca, contenido de muestra)
 - [x]  Conectar el Xiaomi por la red (`adb connect`)
-- [ ]  Revisar y aprobar este plan
-- [ ]  Crear el repositorio privado `adriian1020/inkaterra-tv` (vacío, lo crea Adrián)
-- [ ]  Partir el sprint 0 y el sprint 1 en pasos numerados, con sus pruebas
+- [x]  Revisar y aprobar este plan
+- [x]  Crear el repositorio privado `adriian1020/inkaterra-tv`
+- [x]  Partir el sprint 0 y el sprint 1 en pasos numerados, con sus pruebas
+- [x]  Sprint 0 (28 de octubre): ver el [informe del sprint 0](informes/sprint-0.md) y las decisiones D-13 a D-19
+- [ ]  Subir `sprint-0/integracion` y abrir su PR hacia `main`
+- [ ]  Probar una memoria USB en la TV (D-18), antes del sprint 3
+- [ ]  Decidir pantalla principal: app normal, equipo administrado o reemplazar el inicio de Google TV (D-14), antes del sprint 5
 - [ ]  Conseguir una TCL para el piloto del sprint 5
 
 ## Glosario

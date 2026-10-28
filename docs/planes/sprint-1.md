@@ -371,7 +371,7 @@ git commit -m "feat(pantallas): elegir el idioma de la app (paso 1.5)"
 
 - [ ] **Paso 2: correr todo lo del CI y las pruebas en el Xiaomi**
 
-Run: `cd apps/tv && ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug && ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.notClass=pe.inkaterra.tv.sistema.VolumenesUsbTest`
+Run: `(cd apps/tv && ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug) && EXCLUIR=pe.inkaterra.tv.sistema.VolumenesUsbTest tool/tv.sh probar`
 Expected: BUILD SUCCESSFUL y todas en verde.
 
 - [ ] **Paso 3: escribir el informe y el CHANGELOG, hacer el commit, unir y abrir el PR** de `sprint-1/integracion` hacia `main` después del PR del sprint 0 (solo con el visto bueno de Adrián)
