@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.coil.compose)
+    implementation(libs.androidx.appcompat)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
