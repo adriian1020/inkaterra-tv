@@ -1,10 +1,10 @@
-# Sprint 0 — Preparación en el onn: plan de implementación
+# Sprint 0 — Preparación en el Xiaomi: plan de implementación
 
 > **Para agentes:** SUB-SKILL REQUERIDA: usar superpowers:subagent-driven-development (recomendada) o superpowers:executing-plans para implementar este plan paso a paso. Los pasos usan casillas (`- [ ]`) para el seguimiento.
 
-**Objetivo:** dejar el repositorio listo, con su CI, y una app mínima instalada en el onn. Con ella se averigua qué decodifica la TV, si el 4K va fluido y qué permite Google TV 14 (pantalla principal, arranque, protector de pantalla, suspensión y USB).
+**Objetivo:** dejar el repositorio listo, con su CI, y una app mínima instalada en el Xiaomi. Con ella se averigua qué decodifica la TV, si el 4K va fluido y qué permite Google TV 14 (pantalla principal, arranque, protector de pantalla, suspensión y USB).
 
-**Arquitectura:** un proyecto Gradle en `apps/tv` con un solo módulo `app`, paquete `pe.inkaterra.tv` y las capas `app/ dominio/ datos/ sistema/ pantallas/`. Lo que se averigua con pruebas en el onn queda escrito como decisiones (D-13 en adelante) en `docs/decisiones.md`; el código de exploración que no se adopte se borra antes del PR.
+**Arquitectura:** un proyecto Gradle en `apps/tv` con un solo módulo `app`, paquete `pe.inkaterra.tv` y las capas `app/ dominio/ datos/ sistema/ pantallas/`. Lo que se averigua con pruebas en el Xiaomi queda escrito como decisiones (D-13 en adelante) en `docs/decisiones.md`; el código de exploración que no se adopte se borra antes del PR.
 
 **Tecnología:**
 - Gradle 9.3.1 y AGP 9.1.0 con el Kotlin integrado de AGP (Kotlin 2.4.0). Es la combinación que ya compila en esta PC con asistencia-movil.
@@ -23,22 +23,22 @@
 - Commits con el formato `tipo(ámbito): resumen (paso 0.N)`, en minúscula, en presente y de hasta 72 caracteres. Sin firma de Claude.
 - Ramas: cada paso en `feat/<capa>-<tema>` (o `chore/`, `docs/`), que sale de `sprint-0/integracion` y vuelve con `git merge --no-ff`.
 - Las dependencias van con versión exacta en `apps/tv/gradle/libs.versions.toml`. Subir una es un PR propio.
-- Equipo de pruebas: onn en `192.168.31.112:5555` (`adb connect`). Toda prueba en el equipo usa `-s 192.168.31.112:5555`.
+- Equipo de pruebas: Xiaomi en `192.168.31.242:5555` (`adb connect`). Toda prueba en el equipo usa `-s 192.168.31.242:5555`.
 - Los videos y fotos de prueba no se versionan: viven en `muestras/`, ignorada por git.
 - Máximo 4K: 3840 × 2160. Formatos de video aceptados: H.264 y HEVC (spec, «Reglas de contenido»).
 - Antes de cada commit, lo mismo que el CI, desde `apps/tv`: `./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug`.
 
 ## Foco de revisión
 
-1. **El onn se desconecta de adb** (cambió de IP o se reinició): `tool/onn.sh` debe decir en palabras simples que no encuentra el equipo y cómo reconectarlo, no fallar con un error de adb crudo. Lo cubre la verificación del paso 0.1.
-2. **Un video de prueba que el onn no puede decodificar** (por ejemplo HEVC de 10 bits a 120 Mbps): la prueba de 4K debe registrar «no reproduce» para ese caso y seguir con los demás, no colgarse. Lo cubre la prueba `videoImposibleSeRegistraYSigue` del paso 0.4.
+1. **El Xiaomi se desconecta de adb** (cambió de IP o se reinició): `tool/tv.sh` debe decir en palabras simples que no encuentra el equipo y cómo reconectarlo, no fallar con un error de adb crudo. Lo cubre la verificación del paso 0.1.
+2. **Un video de prueba que el Xiaomi no puede decodificar** (por ejemplo HEVC de 10 bits a 120 Mbps): la prueba de 4K debe registrar «no reproduce» para ese caso y seguir con los demás, no colgarse. Lo cubre la prueba `videoImposibleSeRegistraYSigue` del paso 0.4.
 3. **La memoria USB se retira mientras la app la lee:** la exploración del paso 0.7 debe registrar qué evento llega y que la app no se cierra.
 4. **La TV se reinicia durante una prueba larga** (suspensión, protector de pantalla): las mediciones del paso 0.6 se anotan con la hora, para no confundir un reinicio con un fallo de la app.
 5. **El CI sin permisos para subir el APK, o un secreto faltante:** el workflow no usa secretos en el sprint 0, y el artefacto se sube con `actions/upload-artifact` (paso 0.2).
 
 ---
 
-### Paso 0.1: proyecto base e instalación en el onn
+### Paso 0.1: proyecto base e instalación en el Xiaomi
 
 **Rama:** `chore/tv-base`
 
@@ -53,12 +53,12 @@
   - En `apps/tv/app/`: `build.gradle.kts` y `src/main/AndroidManifest.xml`.
   - En `apps/tv/app/src/main/java/pe/inkaterra/tv/`: `app/MainActivity.kt` y `pantallas/inicio/InicioPantalla.kt`.
   - En `apps/tv/app/src/main/res/`: `drawable/banner.xml` (banner de TV de 320 × 180 con el texto «Inkaterra TV» sobre `#5A6A40`), `values/strings.xml` y `values-en/strings.xml`.
-  - `tool/onn.sh`.
+  - `tool/tv.sh`.
 - Prueba: `apps/tv/app/src/androidTest/java/pe/inkaterra/tv/AppArrancaTest.kt`.
 
 **Interfaces:**
 - Produce:
-  - `tool/onn.sh conectar | instalar | logs`, que usan los pasos siguientes;
+  - `tool/tv.sh conectar | instalar | logs`, que usan los pasos siguientes;
   - `InicioPantalla()` (composable sin parámetros por ahora), que el sprint 1 reemplaza;
   - el catálogo `libs` con los alias `androidx-tv-material`, `androidx-compose-bom`, `media3-exoplayer`, `junit`, `robolectric`, `androidx-test-ext-junit` y `androidx-test-runner`.
 
@@ -84,24 +84,24 @@ class AppArrancaTest {
   - `MainActivity` extiende `ComponentActivity` y hace `setContent { InicioPantalla() }`. La pantalla muestra «Inkaterra TV» y la versión, con `androidx.tv.material3.Text` sobre fondo `#1E2416`.
   - Kotlin: el integrado de AGP 9 (sin el plugin `org.jetbrains.kotlin.android`); se aplica solo `org.jetbrains.kotlin.plugin.compose` 2.4.0. Si la sincronización falla por el Kotlin integrado, poner `android.builtInKotlin=false` en `gradle.properties`, aplicar `org.jetbrains.kotlin.android` 2.4.0 y anotarlo en `docs/decisiones.md`.
 
-- [ ] **Paso 3: escribir `tool/onn.sh`**
-  - Lee el equipo de la variable `ONN` (por omisión `192.168.31.112:5555`).
-  - `conectar` hace `adb connect` y comprueba que `adb -s $ONN get-state` responda `device`. Si no responde, imprime: «No encuentro el onn en $ONN. Revise que esté encendido, en la misma red y con la depuración por red activa; si cambió de IP, use ONN=ip:5555».
-  - `instalar` compila con `./gradlew :app:installDebug` y pasa `-s` a adb mediante `ANDROID_SERIAL=$ONN`.
+- [ ] **Paso 3: escribir `tool/tv.sh`**
+  - Lee el equipo de la variable `TV` (por omisión `192.168.31.242:5555`).
+  - `conectar` hace `adb connect` y comprueba que `adb -s $TV get-state` responda `device`. Si no responde, imprime: «No encuentro la TV en $TV. Revise que esté encendido, en la misma red y con la depuración por red activa; si cambió de IP, use TV=ip:5555».
+  - `instalar` compila con `./gradlew :app:installDebug` y pasa `-s` a adb mediante `ANDROID_SERIAL=$TV`.
   - `logs` filtra logcat por el paquete.
 
-- [ ] **Paso 4: verificar en el onn**
+- [ ] **Paso 4: verificar en el Xiaomi**
 
-Run: `tool/onn.sh conectar && cd apps/tv && ANDROID_SERIAL=192.168.31.112:5555 ./gradlew connectedDebugAndroidTest`
+Run: `tool/tv.sh conectar && cd apps/tv && ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest`
 Expected: `AppArrancaTest` PASS. En la TV aparece «Inkaterra TV» en la fila de apps de Google TV, con su banner.
 
-Comprobar también el foco de revisión 1: con `ONN=192.168.31.250:5555 tool/onn.sh conectar`, aparece el mensaje en palabras simples y la salida es 1.
+Comprobar también el foco de revisión 1: con `TV=192.168.31.250:5555 tool/tv.sh conectar`, aparece el mensaje en palabras simples y la salida es 1.
 
 - [ ] **Paso 5: commit y unión**
 
 ```bash
-git add .gitignore .gitattributes README.md CHANGELOG.md docs/desarrollo.md docs/arquitectura.md docs/decisiones.md apps/tv tool/onn.sh
-git commit -m "chore(tv): proyecto base que se instala en el onn (paso 0.1)"
+git add .gitignore .gitattributes README.md CHANGELOG.md docs/desarrollo.md docs/arquitectura.md docs/decisiones.md apps/tv tool/tv.sh
+git commit -m "chore(tv): proyecto base que se instala en el Xiaomi (paso 0.1)"
 git checkout sprint-0/integracion && git merge --no-ff chore/tv-base
 ```
 
@@ -168,7 +168,7 @@ Expected: el workflow corre en GitHub y termina en verde; el artefacto `apk-tv` 
 - Crear: `apps/tv/app/src/main/java/pe/inkaterra/tv/sistema/capacidades/CapacidadesEquipo.kt` y `apps/tv/app/src/main/java/pe/inkaterra/tv/dominio/Decodificador.kt`.
 - Prueba unitaria: `apps/tv/app/src/test/java/pe/inkaterra/tv/dominio/DecodificadorTest.kt`.
 - Prueba en el equipo: `apps/tv/app/src/androidTest/java/pe/inkaterra/tv/sistema/CapacidadesEquipoTest.kt`.
-- Crear: `docs/informes/equipo-onn.md`.
+- Crear: `docs/informes/equipo-xiaomi.md`.
 
 **Interfaces:**
 - Produce:
@@ -205,14 +205,14 @@ Expected: FAIL.
 Run: `./gradlew testDebugUnitTest --tests '*DecodificadorTest'`
 Expected: PASS.
 
-- [ ] **Paso 5: escribir y correr la prueba en el onn**
+- [ ] **Paso 5: escribir y correr la prueba en el Xiaomi**
   - `CapacidadesEquipoTest.registraLaFicha` imprime con `Log.i("Ficha", …)` cada decodificador de video, el espacio libre de `getExternalFilesDir(null)` y de `filesDir`, y la memoria total.
   - Afirma que hay al menos un decodificador `video/avc` y uno `video/hevc` con `soporta4k`.
 
-Run: `ANDROID_SERIAL=192.168.31.112:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=pe.inkaterra.tv.sistema.CapacidadesEquipoTest && adb -s 192.168.31.112:5555 logcat -d -s Ficha`
-Expected: PASS. La ficha aparece en logcat; se esperan `c2.amlogic.avc/hevc/vp9/av1.decoder` y ~1 GB libre.
+Run: `ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=pe.inkaterra.tv.sistema.CapacidadesEquipoTest && adb -s 192.168.31.242:5555 logcat -d -s Ficha`
+Expected: PASS. La ficha aparece en logcat; se esperan `c2.amlogic.avc/hevc/vp9/av1.decoder` y ~24 GB libres.
 
-- [ ] **Paso 6: escribir `docs/informes/equipo-onn.md`** con la tabla de decodificadores, el espacio, la RAM y la versión de Android.
+- [ ] **Paso 6: escribir `docs/informes/equipo-xiaomi.md`** con la tabla de decodificadores, el espacio, la RAM y la versión de Android.
 
 - [ ] **Paso 7: commit y unión**
 
@@ -231,7 +231,7 @@ git commit -m "feat(sistema): ficha del equipo y decodificadores 4k (paso 0.3)"
 - Prueba en el equipo: `apps/tv/app/src/androidTest/java/pe/inkaterra/tv/sistema/Reproduccion4kTest.kt`.
 - Modificar:
   - `apps/tv/app/build.gradle.kts` (`androidTestImplementation(libs.media3.exoplayer)`);
-  - `docs/informes/equipo-onn.md`;
+  - `docs/informes/equipo-xiaomi.md`;
   - `docs/decisiones.md` (D-13: tasa máxima de video).
 
 **Interfaces:**
@@ -251,20 +251,20 @@ git commit -m "feat(sistema): ficha del equipo y decodificadores 4k (paso 0.3)"
   - Registra con `Log.i("Prueba4k", …)`: el nombre, el decodificador usado (`onVideoDecoderInitialized`), los cuadros perdidos (`DecoderCounters.droppedBufferCount`), los cuadros mostrados (`renderedOutputBufferCount`) y el error si lo hubo.
   - `videoImposibleSeRegistraYSigue`: si `onPlayerError` llega en un archivo, se anota «no reproduce» y la prueba sigue con el siguiente. Al final afirma que los archivos `h264-20m.mp4` y `hevc-20m.mp4` tienen 0 errores.
 
-- [ ] **Paso 3: correr la prueba en el onn**
+- [ ] **Paso 3: correr la prueba en el Xiaomi**
 
-Run: `tool/videos-prueba.sh && ANDROID_SERIAL=192.168.31.112:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=pe.inkaterra.tv.sistema.Reproduccion4kTest && adb -s 192.168.31.112:5555 logcat -d -s Prueba4k`
+Run: `tool/videos-prueba.sh && ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=pe.inkaterra.tv.sistema.Reproduccion4kTest && adb -s 192.168.31.242:5555 logcat -d -s Prueba4k`
 Expected: PASS, con una línea por video.
 
 - [ ] **Paso 4: fijar D-13 y anotar los resultados**
   - La tasa máxima es la más alta en H.264 **y** en HEVC con menos del 1 % de cuadros perdidos.
-  - Se anota en `docs/decisiones.md` como `D-13. Tasa máxima de video: N Mbps`, con la tabla de resultados en `docs/informes/equipo-onn.md`.
+  - Se anota en `docs/decisiones.md` como `D-13. Tasa máxima de video: N Mbps`, con la tabla de resultados en `docs/informes/equipo-xiaomi.md`.
   - Si ninguna tasa pasa, D-13 queda en 20 Mbps y se avisa a Adrián.
 
 - [ ] **Paso 5: commit y unión**
 
 ```bash
-git commit -m "test(sistema): reproducción 4k en el onn y tasa máxima (paso 0.4)"
+git commit -m "test(sistema): reproducción 4k en el Xiaomi y tasa máxima (paso 0.4)"
 ```
 
 ---
@@ -282,14 +282,14 @@ git commit -m "test(sistema): reproducción 4k en el onn y tasa máxima (paso 0.
 
 - [ ] **Paso 1: arranque al encender**
   - Implementar `ReceptorArranque` e instalar.
-  - Reiniciar con `adb -s 192.168.31.112:5555 reboot`, esperar con `adb wait-for-device` y revisar con `adb shell dumpsys activity activities | grep -m1 ResumedActivity`.
+  - Reiniciar con `adb -s 192.168.31.242:5555 reboot`, esperar con `adb wait-for-device` y revisar con `adb shell dumpsys activity activities | grep -m1 ResumedActivity`.
   - Expected: anotar si queda `pe.inkaterra.tv/.app.MainActivity` en primer plano o si Android lo bloqueó (por las restricciones a abrir pantallas desde segundo plano). Si lo bloqueó, probar con el permiso `SYSTEM_ALERT_WINDOW` concedido por `adb shell appops set pe.inkaterra.tv SYSTEM_ALERT_WINDOW allow` y anotarlo.
 
 - [ ] **Paso 2: pantalla principal (sin cambiar código)**
   - Agregar temporalmente a `MainActivity` el filtro `HOME` + `DEFAULT`.
   - Probar `adb shell cmd package set-home-activity pe.inkaterra.tv/.app.MainActivity` y presionar la tecla Inicio del control (`adb shell input keyevent KEYCODE_HOME`).
   - Anotar si Google TV respeta el cambio o vuelve a `launcherx`.
-  - Anotar el plan B sin ejecutarlo: «device owner» con `dpm set-device-owner` exige un equipo sin cuentas, o sea restablecido de fábrica. **No restablecer el onn**: solo documentarlo.
+  - Anotar el plan B sin ejecutarlo: «device owner» con `dpm set-device-owner` exige un equipo sin cuentas, o sea restablecido de fábrica. **No restablecer el Xiaomi**: solo documentarlo.
   - Quitar el filtro `HOME` antes del commit.
 
 - [ ] **Paso 3: escribir D-14 (pantalla principal: qué permite Google TV y qué opción queda para decidir antes del sprint 5) y D-15 (arranque al encender: sí o no y cómo)**, con los comandos usados.
@@ -320,7 +320,7 @@ git commit -m "feat(sistema): arranque al encender y límites de pantalla princi
 
 - [ ] **Paso 1: protector de pantalla**
   - Implementar `ProtectorPantalla` (en `onAttachedToWindow`, `isInteractive = false` y `isFullscreen = true`) e instalar.
-  - Guardar los valores actuales: `settings get secure screensaver_components` (hoy `com.google.android.apps.tv.dreamx/.service.Backdrop`), `screensaver_enabled` y `system screen_off_timeout` (hoy 600000).
+  - Guardar los valores actuales: `settings get secure screensaver_components` (hoy `null`: ninguno), `screensaver_enabled` y `system screen_off_timeout` (hoy 600000).
   - Activar el nuestro con `adb shell settings put secure screensaver_components pe.inkaterra.tv/.sistema.protector.ProtectorPantalla` y `adb shell settings put system screen_off_timeout 60000`, salir a otra app y esperar 1 minuto.
   - Expected: anotar si aparece nuestro protector. **Al terminar, restaurar los valores guardados.**
 
@@ -354,7 +354,7 @@ git commit -m "feat(sistema): protector de pantalla y pantalla encendida (paso 0
   - `class VolumenesUsb(context: Context) { fun actuales(): List<VolumenUsb>; fun observar(alCambiar: (List<VolumenUsb>) -> Unit): AutoCloseable }`, con `StorageManager.storageVolumes` (solo `isRemovable`), `StorageVolume.directory` y el registro de `StorageManager.StorageVolumeCallback`.
   - El sprint 3 lo usa para la USB del huésped.
 
-Requiere de Adrián: tres memorias USB (o una formateada tres veces) en FAT32, exFAT y NTFS, cada una con una foto JPG, una HEIC y un video MOV de celular. El onn tiene un solo puerto USB-C de alimentación; hace falta un hub USB-C con alimentación.
+Requiere de Adrián: tres memorias USB (o una formateada tres veces) en FAT32, exFAT y NTFS, cada una con una foto JPG, una HEIC y un video MOV de celular. El Xiaomi tiene un puerto USB: la memoria se conecta directo.
 
 - [ ] **Paso 1: escribir la prueba en el equipo**
   - `VolumenesUsbTest.listaLaUsbConectada` afirma que `actuales()` trae al menos un volumen montado con `raiz` legible.
@@ -363,15 +363,15 @@ Requiere de Adrián: tres memorias USB (o una formateada tres veces) en FAT32, e
 
 - [ ] **Paso 2: correrla con cada formato**
 
-Run: conectar la USB y `ANDROID_SERIAL=192.168.31.112:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=pe.inkaterra.tv.sistema.VolumenesUsbTest && adb -s 192.168.31.112:5555 logcat -d -s Usb`
+Run: conectar la USB y `ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=pe.inkaterra.tv.sistema.VolumenesUsbTest && adb -s 192.168.31.242:5555 logcat -d -s Usb`
 Expected: por cada formato, anotar si monta, si se lee directo o solo por MediaStore, y si la foto HEIC se decodifica (`ImageDecoder.decodeBitmap`).
 
 - [ ] **Paso 3: retirar la USB durante la lectura** (foco de revisión 3)
   - Una app de prueba temporal registra `observar` y deja un bucle de lectura de 30 s.
   - Retirar la USB a mitad.
-  - Expected: anotar el evento que llega y confirmar en `tool/onn.sh logs` que no hay cierre de la app.
+  - Expected: anotar el evento que llega y confirmar en `tool/tv.sh logs` que no hay cierre de la app.
 
-- [ ] **Paso 4: escribir D-18 (USB: formatos que lee el onn, forma de lectura y permisos)**
+- [ ] **Paso 4: escribir D-18 (USB: formatos que lee el Xiaomi, forma de lectura y permisos)**
 
 - [ ] **Paso 5: commit y unión**
 
@@ -387,9 +387,9 @@ git commit -m "feat(sistema): detectar y leer memorias usb (paso 0.7)"
 - Crear: `docs/informes/sprint-0.md` (misma plantilla que los informes de asistencia-movil: resumen, lo realizado paso a paso, calidad, decisiones, problemas, pendientes, próximos pasos, cómo probarlo y glosario).
 - Modificar: `CHANGELOG.md` (en «Sin publicar», la app mínima instalable en Google TV) y `docs/plan-de-desarrollo.md`. En el plan: marcar las decisiones cerradas, ajustar «Reglas de contenido» con D-13 y anotar si el sprint 1 cambia.
 
-- [ ] **Paso 1: correr todo lo del CI y las pruebas en el onn**
+- [ ] **Paso 1: correr todo lo del CI y las pruebas en el Xiaomi**
 
-Run: `cd apps/tv && ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug && ANDROID_SERIAL=192.168.31.112:5555 ./gradlew connectedDebugAndroidTest`
+Run: `cd apps/tv && ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug && ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest`
 Expected: BUILD SUCCESSFUL y todas las pruebas en verde. `VolumenesUsbTest` necesita una USB conectada; si no hay, se corre con `-Pandroid.testInstrumentationRunnerArguments.notClass=pe.inkaterra.tv.sistema.VolumenesUsbTest` y se dice en el informe.
 
 - [ ] **Paso 2: borrar el código de exploración que ninguna decisión adoptó** y repetir el paso 1.
@@ -401,4 +401,4 @@ git commit -m "docs: informe del sprint 0 (paso 0.8)"
 git push
 ```
 
-**Criterio de aceptación del sprint:** la app mínima generada por el CI se instala en el onn por la red y reproduce un video 4K sin perder cuadros, y `docs/decisiones.md` dice qué se puede y qué no en Google TV (D-13 a D-18).
+**Criterio de aceptación del sprint:** la app mínima generada por el CI se instala en el Xiaomi por la red y reproduce un video 4K sin perder cuadros, y `docs/decisiones.md` dice qué se puede y qué no en Google TV (D-13 a D-18).

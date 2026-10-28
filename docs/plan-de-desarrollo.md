@@ -45,16 +45,16 @@ Piezas principales:
 - **Datos locales:** Room (biblioteca, campañas y cola de eventos) y DataStore (ajustes).
 - **Tareas en segundo plano:** WorkManager (descargas y envío de eventos en la Fase 2).
 - **Red (Fase 2):** OkHttp con kotlinx.serialization.
-- **Pruebas:** JUnit para la lógica, pruebas de Compose para las pantallas y pruebas instrumentadas en el onn (y en la TCL desde el piloto).
+- **Pruebas:** JUnit para la lógica, pruebas de Compose para las pantallas y pruebas instrumentadas en el Xiaomi (y en la TCL desde el piloto).
 
 ### Equipos
 
 | Equipo | Para qué | Ficha |
 | --- | --- | --- |
-| **onn. 4K Streaming Box** (de Adrián) | Desarrollo y pruebas diarias, por la red (`adb connect`) | Google TV con Android 14 (SDK 34), chip Amlogic S4, 2 GB de RAM, **unos 4,7 GB de almacenamiento con solo ~1 GB libre**. Hoy conectado a una pantalla 1080p sin HDR |
+| **Xiaomi TV Box S** (MiTV-AFMU0, de Adrián) | Desarrollo y pruebas diarias, por la red (`adb connect 192.168.31.242:5555`) | Google TV con Android 14 (SDK 34), chip Amlogic, 2 GB de RAM, **26 GB de almacenamiento con ~24 GB libres**, decodificadores por hardware H.264, HEVC, VP9 y AV1, y un puerto USB. Hoy conectado a una pantalla 1080p sin HDR. Reemplaza al onn. 4K Streaming Box que se usó al planificar, que tenía ~1 GB libre |
 | **TCL de las habitaciones** (de Inkaterra) | Piloto y producción | Se asume Google TV (según Canelo). Falta el modelo, la RAM y el espacio libre |
 
-Que algo funcione en el onn no garantiza que funcione en la TCL: tienen chips distintos. Por eso el piloto del sprint 5 se hace en una TCL. Para comprobar la **salida** 4K y HDR hace falta una pantalla 4K; con la pantalla 1080p actual solo se comprueba que el onn **decodifica** el 4K.
+Que algo funcione en el Xiaomi no garantiza que funcione en la TCL: tienen chips distintos. Por eso el piloto del sprint 5 se hace en una TCL. Para comprobar la **salida** 4K y HDR hace falta una pantalla 4K; con la pantalla 1080p actual solo se comprueba que el Xiaomi **decodifica** el 4K.
 
 ### Imagen de marca
 
@@ -112,7 +112,7 @@ La app de TV agregaría un dominio más al edge (por ejemplo `tv.inkaterra.pe`) 
 
 ### Decisiones pendientes
 
-Ya cerradas para la Fase 0: equipo de desarrollo (onn), TCL con Google TV (supuesto), Product Owner (Adrián) y marca (la web).
+Ya cerradas para la Fase 0: equipo de desarrollo (Xiaomi), TCL con Google TV (supuesto), Product Owner (Adrián) y marca (la web).
 
 Antes del sprint 4 (lunes 23 de noviembre):
 
@@ -201,14 +201,14 @@ apps/tv/                 App de Android TV (Gradle)
   app/src/main/java/pe/inkaterra/tv/
     app/ dominio/ datos/ sistema/ pantallas/
   app/src/test/          Pruebas unitarias y de pantallas: espejo de main/
-  app/src/androidTest/   Pruebas en el onn (equivalen a integration_test/)
+  app/src/androidTest/   Pruebas en el Xiaomi (equivalen a integration_test/)
 apps/panel/              Panel web (desde la Fase 2)
 services/api/            API (desde la Fase 2)
-tool/                    Scripts (por ejemplo, instalar en el onn por la red)
+tool/                    Scripts (por ejemplo, instalar en el Xiaomi por la red)
 .github/workflows/       CI por carpeta: la app de TV, el panel y la API
 ```
 
-Los videos y fotos de muestra no se versionan: viven en una carpeta local ignorada por git y se copian al onn con un script de `tool/`.
+Los videos y fotos de muestra no se versionan: viven en una carpeta local ignorada por git y se copian al Xiaomi con un script de `tool/`.
 
 ## Casos de uso
 
@@ -349,7 +349,7 @@ gantt
   dateFormat YYYY-MM-DD
   axisFormat %d %b
   section Fase 0
-  S0 Preparación en el onn :s0, 2026-10-26, 5d
+  S0 Preparación en el Xiaomi :s0, 2026-10-26, 5d
   section Fase 1 Reproductor local
   S1 Base y navegación :s1, 2026-11-02, 5d
   S2 Video y fotos :s2, 2026-11-09, 5d
@@ -374,7 +374,7 @@ gantt
 
 | Fase | Sprints | Fechas | Se acepta cuando |
 | --- | --- | --- | --- |
-| 0. Preparación | 1 | 26 al 30 oct | Un video 4K se reproduce fluido en el onn y se sabe qué permite Google TV (pantalla principal, protector de pantalla, USB) |
+| 0. Preparación | 1 | 26 al 30 oct | Un video 4K se reproduce fluido en el Xiaomi y se sabe qué permite Google TV (pantalla principal, protector de pantalla, USB) |
 | 1. Reproductor local | 5 | 2 nov al 4 dic | Una TV funciona varios días en una habitación real sin que nadie la toque |
 | 2. Nube y panel | 7 | 7 dic al 5 feb (con pausa de fin de año) | Marketing administra el contenido de un hotel durante una semana sin ayuda |
 | 3. IPTV con mini anuncios | 4 | 8 feb al 5 mar | Varias habitaciones ven canales con mini anuncios durante una semana |
@@ -385,9 +385,9 @@ gantt
 
 | Semana | Sprint | Fechas | Objetivo | Se acepta cuando |
 | --- | --- | --- | --- | --- |
-| 1 | S0 Preparación | 26 al 30 oct | Ficha del onn, prueba de 4K, límites de Google TV, repositorio y CI | Una app mínima del CI reproduce 4K en el onn y hay un informe de lo que permite Google TV |
+| 1 | S0 Preparación | 26 al 30 oct | Ficha del Xiaomi, prueba de 4K, límites de Google TV, repositorio y CI | Una app mínima del CI reproduce 4K en el Xiaomi y hay un informe de lo que permite Google TV |
 | 2 | S1 Base y navegación | 2 al 6 nov | Tema Inkaterra, inicio, control remoto, idioma y biblioteca local | Se recorre todo el inicio con el control y se listan los archivos |
-| 3 | S2 Video y fotos | 9 al 13 nov | Reproductor de video 4K y presentación de fotos | Video 4K completo y presentación sin trabas en el onn |
+| 3 | S2 Video y fotos | 9 al 13 nov | Reproductor de video 4K y presentación de fotos | Video 4K completo y presentación sin trabas en el Xiaomi |
 | 4 | S3 Música y USB del huésped | 16 al 20 nov | Música con teclas del control, fotos con música, USB del huésped | Suena una lista, y una USB de celular se ve y no deja rastro |
 | 5 | S4 Promociones | 23 al 27 nov | Promociones sin fin a los 5 minutos sin uso | Siguen horas sin que la TV se suspenda y una tecla devuelve al huésped |
 | 6 | S5 Ajustes, USB del hotel y piloto | 30 nov al 4 dic | PIN, cargar contenido por USB, arranque y piloto en una TCL | La TCL del piloto funciona varios días sin intervención |
@@ -405,27 +405,27 @@ gantt
 | 19 | S16 Piloto IPTV | 1 al 5 mar | Fuente real en un hotel y prueba con varias habitaciones | Varias habitaciones ven canales con anuncios una semana |
 | 20 a 22 | S17 a S19 (opcional) | 8 al 26 mar | Fase 4: bienvenida, información del hotel y limpieza al salir | Se decide al terminar la Fase 3 |
 
-El inicio supuesto es el lunes 26 de octubre. Adrián trabaja este proyecto **al mismo tiempo que asistencia-movil**; los sprints se planifican de una semana, y si uno termina antes, el siguiente se adelanta. Cada sprint termina con una prueba en el onn (y en la TCL desde el piloto), y si no se cumple, el siguiente no empieza.
+El inicio supuesto es el lunes 26 de octubre. Adrián trabaja este proyecto **al mismo tiempo que asistencia-movil**; los sprints se planifican de una semana, y si uno termina antes, el siguiente se adelanta. Cada sprint termina con una prueba en el Xiaomi (y en la TCL desde el piloto), y si no se cumple, el siguiente no empieza.
 
 ### Fase 0. Preparación
 
-**Sprint 0: preparación en el onn (26 al 30 oct)**
+**Sprint 0: preparación en el Xiaomi (26 al 30 oct)**
 
-El objetivo es no construir sobre supuestos. Todo lo que depende de la TV se prueba primero, en el onn.
+El objetivo es no construir sobre supuestos. Todo lo que depende de la TV se prueba primero, en el Xiaomi.
 
-- Ficha completa del onn: códecs de video que decodifica por hardware (H.264, HEVC, VP9, AV1) y hasta qué resolución y tasa de datos.
+- Ficha completa del Xiaomi: códecs de video que decodifica por hardware (H.264, HEVC, VP9, AV1) y hasta qué resolución y tasa de datos.
 - **Prueba de 4K:** reproducir con Media3 videos 4K en H.264 y HEVC a distintas tasas de datos, y medir si se pierden cuadros. De aquí sale el límite de la tabla de reglas de contenido.
 - **Pruebas de lo que permite Google TV 14**, porque limita cosas que esta app necesita:
   - ser la pantalla principal de la TV (para decidir antes del sprint 5);
   - abrir la app sola al encender la TV;
-  - usar la app como protector de pantalla del sistema (hoy el onn usa el de Google, «Backdrop»);
+  - usar la app como protector de pantalla del sistema (hoy el Xiaomi no tiene ninguno configurado);
   - que la TV no se suspenda mientras pasan las promociones (hoy se suspende a los 20 minutos);
   - leer una memoria USB en FAT32, exFAT y NTFS, y enterarse de cuándo se conecta y se retira.
-- **Espacio:** el onn tiene ~1 GB libre. Medir cuánto contenido entra y qué pasa al llenarse.
+- **Espacio:** el Xiaomi tiene ~24 GB libres, pero la TCL no se sabe. Medir cuánto ocupa el contenido de muestra y qué hace Android al llenarse.
 - Repositorio `inkaterra-tv` con la estructura de carpetas, Gradle, el CI (formato, análisis, pruebas y APK) y `docs/`.
 - Convenciones copiadas de asistencia: todo en español, commits `tipo(ámbito): resumen`, ramas por paso, CHANGELOG y SemVer.
 
-**Se acepta cuando:** una app mínima generada por el CI se instala en el onn por la red y reproduce un video 4K sin perder cuadros, y un informe dice qué se puede y qué no en Google TV.
+**Se acepta cuando:** una app mínima generada por el CI se instala en el Xiaomi por la red y reproduce un video 4K sin perder cuadros, y un informe dice qué se puede y qué no en Google TV.
 
 ### Fase 1. Reproductor local (5 sprints)
 
@@ -445,7 +445,7 @@ El objetivo es no construir sobre supuestos. Todo lo que depende de la TV se pru
 - Visor de fotos y presentación automática con transiciones.
 - Archivos dañados o fuera de las reglas: mensaje claro, se saltan y quedan en el registro.
 
-**Se acepta cuando:** se ve un video 4K completo y una presentación de fotos en el onn sin trabas.
+**Se acepta cuando:** se ve un video 4K completo y una presentación de fotos en el Xiaomi sin trabas.
 
 **Sprint 3: música y USB del huésped (16 al 20 nov)**
 
@@ -583,7 +583,7 @@ Se decide al terminar la Fase 3. Unos 3 sprints:
 
 ## Metodología
 
-Scrum con sprints de una semana, adaptado a **una sola persona**. Al final de cada sprint hay algo que se instala y se prueba en el onn (y en la TCL desde el piloto).
+Scrum con sprints de una semana, adaptado a **una sola persona**. Al final de cada sprint hay algo que se instala y se prueba en el Xiaomi (y en la TCL desde el piloto).
 
 | Rol | Quién | Responsabilidad |
 | --- | --- | --- |
@@ -595,7 +595,7 @@ Scrum con sprints de una semana, adaptado a **una sola persona**. Al final de ca
 | --- | --- | --- |
 | Planning | Lunes, 30 minutos | Partir el sprint en pasos numerados (1.1, 1.2…) |
 | Bitácora diaria | Cada día, unas líneas | Qué hice, qué haré, qué me bloquea |
-| Review | Al cerrar el sprint | Demo en el onn (y en la TCL desde el piloto), grabada o con capturas para el informe |
+| Review | Al cerrar el sprint | Demo en el Xiaomi (y en la TCL desde el piloto), grabada o con capturas para el informe |
 | Retro e informe | Viernes | El informe del sprint, con la misma plantilla que asistencia-movil |
 
 ### Cómo se trabaja cada paso
@@ -606,7 +606,7 @@ Igual que en asistencia-movil:
 2. La prueba se escribe antes que el código.
 3. Código.
 4. Chequeos del CI en local: formato, análisis y pruebas.
-5. Prueba en el onn cuando el paso toca la TV.
+5. Prueba en el Xiaomi cuando el paso toca la TV.
 6. Commit `tipo(ámbito): resumen (paso N.M)`, con el porqué en el cuerpo.
 7. Unión a `sprint-N/integracion` y, al cerrar el sprint, pull request hacia `main`.
 
@@ -636,7 +636,7 @@ Una historia está terminada cuando:
 
 - tiene pruebas y pasa el CI;
 - pasó la autorrevisión del pull request;
-- se probó en el onn real (y en la TCL desde el piloto);
+- se probó en el Xiaomi real (y en la TCL desde el piloto);
 - su documentación y el CHANGELOG están al día;
 - hay un APK de pruebas generado por el CI.
 
@@ -658,8 +658,8 @@ Una historia está terminada cuando:
 | Riesgo | Qué hacemos |
 | --- | --- |
 | Google TV limita la pantalla principal, el arranque automático o el protector de pantalla | Se prueba en el sprint 0, antes de diseñar. Plan B: configurar la TV como equipo administrado (device owner) por adb |
-| Poco espacio: el onn tiene ~1 GB libre y no se sabe cuánto tiene la TCL | Se mide en el sprint 0. La app avisa antes de llenarse y prioriza las promociones. Plan B: una memoria USB fija en la TV solo para el contenido del hotel |
-| Lo que funciona en el onn no funciona igual en la TCL | Piloto en una TCL en el sprint 5, antes de la Fase 2 |
+| Poco espacio: no se sabe cuánto tiene la TCL (el onn. 4K que se probó al planificar tenía ~1 GB libre) | Se mide en el sprint 0. La app avisa antes de llenarse y prioriza las promociones. Plan B: una memoria USB fija en la TV solo para el contenido del hotel |
+| Lo que funciona en el Xiaomi no funciona igual en la TCL | Piloto en una TCL en el sprint 5, antes de la Fase 2 |
 | La USB del huésped trae virus o archivos raros | La app solo lee fotos y videos, nunca instala ni abre otra cosa; un archivo que falla se salta |
 | La TCL no reproduce fluido ciertos 4K | La Fase 0 fija la tasa de datos y los códecs permitidos, y el panel los valida |
 | Internet débil en sedes remotas | La TV reproduce siempre desde su memoria y descarga de noche, retomando si se corta |
@@ -672,7 +672,7 @@ Una historia está terminada cuando:
 ## Próximos pasos
 
 - [x]  Cerrar las decisiones de la Fase 0 (equipo, Product Owner, marca, contenido de muestra)
-- [x]  Conectar el onn por la red (`adb connect`)
+- [x]  Conectar el Xiaomi por la red (`adb connect`)
 - [ ]  Revisar y aprobar este plan
 - [ ]  Crear el repositorio privado `adriian1020/inkaterra-tv` (vacío, lo crea Adrián)
 - [ ]  Partir el sprint 0 y el sprint 1 en pasos numerados, con sus pruebas
@@ -690,7 +690,7 @@ Una historia está terminada cuando:
 | **H.264 / HEVC (H.265)** | Formatos de compresión de video; HEVC ocupa la mitad para la misma calidad |
 | **HEIC** | Formato de foto de los iPhone y de muchos celulares nuevos |
 | **FAT32 / exFAT / NTFS** | Formas de organizar una memoria USB; no todas las TVs leen las tres |
-| **onn. 4K Streaming Box** | Equipo con Google TV que se conecta por HDMI; se usa para desarrollar |
+| **Xiaomi TV Box S** | Equipo con Google TV que se conecta por HDMI; se usa para desarrollar |
 | **adb** | Herramienta para instalar y probar apps en el equipo desde la PC, por cable o por la red |
 | **Tasa de datos** | Cuántos megabits por segundo necesita un video; si es muy alta, la TV se traba |
 | **Protector de pantalla del sistema** | Lo que muestra Android TV cuando nadie usa la TV, aunque se esté en otra app |

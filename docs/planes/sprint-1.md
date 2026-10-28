@@ -15,7 +15,7 @@
 
 **Spec:** [docs/plan-de-desarrollo.md](../plan-de-desarrollo.md): Fase 1, sprint 1, «Reglas de contenido», «Imagen de marca» y CU-01.
 
-**Depende del sprint 0:** el proyecto, el CI y `tool/onn.sh` (paso 0.1), la tasa máxima D-13 (paso 0.4) y `soporta4k` (paso 0.3).
+**Depende del sprint 0:** el proyecto, el CI y `tool/tv.sh` (paso 0.1), la tasa máxima D-13 (paso 0.4) y `soporta4k` (paso 0.3).
 
 ## Restricciones globales
 
@@ -155,7 +155,7 @@ Run: `./gradlew testDebugUnitTest --tests '*BibliotecaTest'`
 Expected: PASS, 6 pruebas.
 
 - [ ] **Paso 5: escribir `tool/copiar-contenido.sh`**
-  - Copia `muestras/contenido/{videos,fotos,musica,promociones}` a `/sdcard/Android/data/pe.inkaterra.tv/files/contenido/` con `adb -s $ONN push`.
+  - Copia `muestras/contenido/{videos,fotos,musica,promociones}` a `/sdcard/Android/data/pe.inkaterra.tv/files/contenido/` con `adb -s $TV push`.
   - Antes, preparar la carpeta `muestras/contenido/` con fotos y videos de inkaterra.com (los que Adrián autorizó para pruebas), más un video 8K y uno AV1 generados con `tool/videos-prueba.sh`, para ver los rechazos.
 
 - [ ] **Paso 6: commit y unión**
@@ -209,9 +209,9 @@ Expected: FAIL.
 
 - [ ] **Paso 3: descargar las fuentes con sus licencias e implementar `Tema.kt`.** `MainActivity` envuelve su contenido en `TemaInkaterra`. En `app/build.gradle.kts` agregar `testOptions { unitTests.isIncludeAndroidResources = true }`, que Robolectric necesita para leer las fuentes y las cadenas.
 
-- [ ] **Paso 4: correrla y ver que pasa, y mirarla en el onn**
+- [ ] **Paso 4: correrla y ver que pasa, y mirarla en el Xiaomi**
 
-Run: `./gradlew testDebugUnitTest --tests '*TemaTest' && cd ../.. && tool/onn.sh instalar`
+Run: `./gradlew testDebugUnitTest --tests '*TemaTest' && cd ../.. && tool/tv.sh instalar`
 Expected: PASS. En la TV, «Inkaterra TV» sale en Cinzel sobre el fondo `#1E2416`.
 
 - [ ] **Paso 5: commit y unión**
@@ -279,10 +279,10 @@ Expected: FAIL.
 Run: `./gradlew testDebugUnitTest --tests '*NavegacionTest'`
 Expected: PASS, 5 pruebas.
 
-- [ ] **Paso 5: probar en el onn con contenido real**
+- [ ] **Paso 5: probar en el Xiaomi con contenido real**
 
-Run: `tool/copiar-contenido.sh && tool/onn.sh instalar`
-Expected: con el control del onn se recorren las tres tarjetas, se entra a cada sección, se ven los títulos de las muestras y no aparecen el video 8K ni el AV1. Atrás vuelve a la tarjeta de origen.
+Run: `tool/copiar-contenido.sh && tool/tv.sh instalar`
+Expected: con el control del Xiaomi se recorren las tres tarjetas, se entra a cada sección, se ven los títulos de las muestras y no aparecen el video 8K ni el AV1. Atrás vuelve a la tarjeta de origen.
 
 - [ ] **Paso 6: commit y unión**
 
@@ -337,9 +337,9 @@ Expected: FAIL en `IdiomaTest`.
 Run: `./gradlew testDebugUnitTest`
 Expected: PASS en todas.
 
-- [ ] **Paso 5: probar en el onn**
+- [ ] **Paso 5: probar en el Xiaomi**
 
-Run: `adb -s 192.168.31.112:5555 shell pm clear pe.inkaterra.tv && tool/onn.sh instalar`
+Run: `adb -s 192.168.31.242:5555 shell pm clear pe.inkaterra.tv && tool/tv.sh instalar`
 Expected: aparece la pantalla de idioma. Con «English» el inicio dice «Photos» y «Music». Al cerrar y abrir la app ya no pregunta, y desde el inicio se vuelve a español.
 
 - [ ] **Paso 6: commit y unión**
@@ -350,7 +350,7 @@ git commit -m "feat(pantallas): elegir el idioma de la app (paso 1.5)"
 
 ---
 
-### Paso 1.6: prueba integral en el onn, informe y PR
+### Paso 1.6: prueba integral en el Xiaomi, informe y PR
 
 **Rama:** `test/flujo-sprint1`
 
@@ -367,15 +367,15 @@ git commit -m "feat(pantallas): elegir el idioma de la app (paso 1.5)"
   - `FlujoSprint1Test.recorreIdiomaInicioYSecciones`: limpia el idioma, elige Español, va a Fotos con Derecha y Enter, comprueba que se ve la foto falsa, vuelve con Atrás y comprueba el foco en Fotos.
   - Las teclas se envían con `InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_RIGHT)`, como el control real.
 
-- [ ] **Paso 2: correr todo lo del CI y las pruebas en el onn**
+- [ ] **Paso 2: correr todo lo del CI y las pruebas en el Xiaomi**
 
-Run: `cd apps/tv && ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug && ANDROID_SERIAL=192.168.31.112:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.notClass=pe.inkaterra.tv.sistema.VolumenesUsbTest`
+Run: `cd apps/tv && ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug && ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.notClass=pe.inkaterra.tv.sistema.VolumenesUsbTest`
 Expected: BUILD SUCCESSFUL y todas en verde.
 
 - [ ] **Paso 3: escribir el informe y el CHANGELOG, hacer el commit, unir y abrir el PR** de `sprint-1/integracion` hacia `main` después del PR del sprint 0 (solo con el visto bueno de Adrián)
 
 ```bash
-git commit -m "test(app): flujo del sprint 1 en el onn e informe (paso 1.6)"
+git commit -m "test(app): flujo del sprint 1 en el Xiaomi e informe (paso 1.6)"
 ```
 
-**Criterio de aceptación del sprint:** con el control del onn se elige el idioma, se recorre todo el inicio y cada sección lista los archivos de la carpeta del hotel, sin los que no cumplen las reglas de contenido.
+**Criterio de aceptación del sprint:** con el control del Xiaomi se elige el idioma, se recorre todo el inicio y cada sección lista los archivos de la carpeta del hotel, sin los que no cumplen las reglas de contenido.
