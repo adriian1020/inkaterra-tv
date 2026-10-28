@@ -2,6 +2,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ktlint)
 }
 
 android {
@@ -12,7 +13,7 @@ android {
         applicationId = "pe.inkaterra.tv"
         // Android 11: las TCL más antiguas con Google TV.
         minSdk = 30
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -25,6 +26,16 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+
+    lint {
+        warningsAsErrors = true
+        abortOnError = true
+        // Las versiones nuevas de dependencias se suben en su propio PR, no rompen el CI.
+        disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion")
+        // El banner de TV va solo en xhdpi (320 × 180), como pide la guía de Android TV.
+        disable += "IconMissingDensityFolder"
     }
 }
 
@@ -35,6 +46,8 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.tv.material)
+
+    testImplementation(libs.junit)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
