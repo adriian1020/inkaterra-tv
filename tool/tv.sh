@@ -42,8 +42,15 @@ case "${1:-}" in
     filtro=()
     [ -n "${2:-}" ] && filtro=(-e class "$2")
     [ -n "${EXCLUIR:-}" ] && filtro+=(-e notClass "$EXCLUIR")
-    salida=$(adb -s "$TV" shell am instrument -w "${filtro[@]}" pe.inkaterra.tv.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r')
+    # Lo que la prueba alcanzó a imprimir se muestra siempre, aunque adb termine con error.
+    codigo=0
+    salida=$(adb -s "$TV" shell am instrument -w "${filtro[@]}" pe.inkaterra.tv.test/androidx.test.runner.AndroidJUnitRunner 2>&1 | tr -d '\r') || codigo=$?
     echo "$salida"
+    if [ "$codigo" -ne 0 ] && [ "$(adb -s "$TV" get-state 2>/dev/null)" != "device" ]; then
+      echo "$(date +%H:%M:%S) Se perdió la conexión con la TV durante las pruebas (¿se reinició o se" >&2
+      echo "suspendió?). No es un fallo de la app. Reconéctela con tool/tv.sh conectar y repita." >&2
+      exit 1
+    fi
     grep -q '^OK (' <<<"$salida"
     ;;
   logs)

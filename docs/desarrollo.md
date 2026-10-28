@@ -39,7 +39,7 @@ Lo mismo que el CI, desde `apps/tv`:
 ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug
 ```
 
-- `src/test/`: lógica y pantallas, en la PC (JUnit y Robolectric). Espejo de `src/main/`.
+- `src/test/`: lógica y pantallas, en la PC (JUnit; Robolectric se agrega en el sprint 1). Espejo de `src/main/`.
 - `src/androidTest/`: lo que necesita la TV real (reproductor, USB, sistema).
 - Datos inventados siempre: «Atardecer en Machu Picchu.mp4», «Reserva Amazónica 01.jpg».
 

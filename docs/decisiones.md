@@ -67,7 +67,8 @@ Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
 
 - **AGP 9.4.1, Gradle 9.7.1 y `compileSdk` 37.** El plan decía AGP 9.1.0 con Gradle 9.3.1 y
   `compileSdk` 36, pero Compose BOM 2026.09.00 exige compilar contra Android 37, y AGP 9.1 llega
-  hasta 36. `targetSdk` sigue en 36 y `minSdk` en 30.
+  hasta 36. `targetSdk` también sube a 37, porque lint lo exige; las TVs con Android 11 a 14 no
+  reciben esos cambios. `minSdk` sigue en 30.
 - **Pruebas en la TV con `tool/tv.sh probar`.** Con la TV conectada por red (`adb connect`),
   `connectedDebugAndroidTest` de AGP 9.4 termina en error aunque todas las pruebas pasen. El
   script instala los dos APK y corre `am instrument`; falla si la salida no dice `OK (`.
@@ -141,18 +142,12 @@ Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
 - **Decisión:** para que las promociones sigan sin fin (D-09), al instalar cada TV también se
   corre `adb shell settings put secure sleep_timeout -1`. Lo que apague la TV de noche lo hace
   el huésped con el control.
-
-## D-19. Se acepta WEBM con VP9
-
-- **Qué:** además de MP4, MKV y MOV con H.264 o HEVC, se aceptan videos **WEBM con VP9**
-  (`video/x-vnd.on2.vp9`), con los mismos límites: hasta 3840 × 2160 y 60 Mbps (D-13). Vale
-  para el contenido del hotel y para la USB del huésped.
-- **Por qué:** pedido de Adrián. Los celulares Android y muchas descargas de internet graban o
-  entregan WEBM con VP9 (la memoria de prueba traía uno). En el Xiaomi, VP9 4K a 20, 40 y
-  60 Mbps se reprodujo sin perder cuadros con `c2.amlogic.vp9.decoder`, igual que H.264 y HEVC.
-- **No se acepta AV1:** el Xiaomi lo decodifica, pero solo hasta 40 Mbps declarados, y la TCL
-  podría no tenerlo. Se revisa si algún video real lo necesita.
-- **Pendiente:** repetir la prueba de VP9 en la TCL del piloto (sprint 5).
+- **Apagado por inactividad (`attentive_timeout`):** Android puede apagar la TV tras horas sin
+  teclas aunque la app pida la pantalla encendida. En el Xiaomi está desactivado (`-1`); en
+  la TCL hay que leerlo (`adb shell settings get secure attentive_timeout`) y, si tiene valor,
+  ponerlo en `-1` al instalarla. Pendiente del piloto.
+- **Alcance de la medición:** la app al frente se midió 3 minutos (el plan pedía 5); las
+  promociones de horas se comprueban en el piloto del sprint 5.
 
 ## D-18. Memorias USB: código listo, prueba en la TV pendiente
 
@@ -168,3 +163,19 @@ Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
   su propio cargador o con un hub USB con alimentación, y luego en la TCL. Hasta entonces no
   se sabe qué formatos lee (FAT32, exFAT, NTFS) ni si hace falta pedir permisos de fotos y
   videos.
+- **También pendiente:** si la lectura directa de la carpeta falla (Android 11 en adelante
+  limita el acceso), leer por `MediaStore` y anotar el permiso que hace falta
+  (`READ_MEDIA_IMAGES` y `READ_MEDIA_VIDEO`); y retirar la memoria mientras la app la lee, para
+  confirmar que no se cierra.
+
+## D-19. Se acepta WEBM con VP9
+
+- **Qué:** además de MP4, MKV y MOV con H.264 o HEVC, se aceptan videos **WEBM con VP9**
+  (`video/x-vnd.on2.vp9`), con los mismos límites: hasta 3840 × 2160 y 60 Mbps (D-13). Vale
+  para el contenido del hotel y para la USB del huésped.
+- **Por qué:** pedido de Adrián. Los celulares Android y muchas descargas de internet graban o
+  entregan WEBM con VP9 (la memoria de prueba traía uno). En el Xiaomi, VP9 4K a 20, 40 y
+  60 Mbps se reprodujo sin perder cuadros con `c2.amlogic.vp9.decoder`, igual que H.264 y HEVC.
+- **No se acepta AV1:** el Xiaomi lo decodifica, pero solo hasta 40 Mbps declarados, y la TCL
+  podría no tenerlo. Se revisa si algún video real lo necesita.
+- **Pendiente:** repetir la prueba de VP9 en la TCL del piloto (sprint 5).

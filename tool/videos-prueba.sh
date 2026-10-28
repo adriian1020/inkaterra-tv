@@ -55,6 +55,12 @@ for caso in "${casos[@]}"; do
     "${audio[@]}" "$(ruta_local "$salida/$nombre")"
 done
 
+# Solo audio: así es como queda un video que la TV no puede decodificar (Reproduccion4kTest).
+if [ ! -f "$salida/solo-audio.m4a" ]; then
+  "$ffmpeg" -hide_banner -loglevel error -y -f lavfi -i "sine=frequency=440:sample_rate=48000" \
+    -t "$segundos" -c:a aac -b:a 128k "$(ruta_local "$salida/solo-audio.m4a")"
+fi
+
 adb connect "$TV" >/dev/null 2>&1 || true
 adb -s "$TV" shell mkdir -p "$destino"
 for archivo in "$salida"/*; do
