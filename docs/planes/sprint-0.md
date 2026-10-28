@@ -92,7 +92,7 @@ class AppArrancaTest {
 
 - [ ] **Paso 4: verificar en el Xiaomi**
 
-Run: `tool/tv.sh conectar && cd apps/tv && ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest`
+Run: `tool/tv.sh probar`
 Expected: `AppArrancaTest` PASS. En la TV aparece «Inkaterra TV» en la fila de apps de Google TV, con su banner.
 
 Comprobar también el foco de revisión 1: con `TV=192.168.31.250:5555 tool/tv.sh conectar`, aparece el mensaje en palabras simples y la salida es 1.
@@ -209,7 +209,7 @@ Expected: PASS.
   - `CapacidadesEquipoTest.registraLaFicha` imprime con `Log.i("Ficha", …)` cada decodificador de video, el espacio libre de `getExternalFilesDir(null)` y de `filesDir`, y la memoria total.
   - Afirma que hay al menos un decodificador `video/avc` y uno `video/hevc` con `soporta4k`.
 
-Run: `ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=pe.inkaterra.tv.sistema.CapacidadesEquipoTest && adb -s 192.168.31.242:5555 logcat -d -s Ficha`
+Run: `tool/tv.sh probar pe.inkaterra.tv.sistema.CapacidadesEquipoTest && adb -s 192.168.31.242:5555 logcat -d -s Ficha`
 Expected: PASS. La ficha aparece en logcat; se esperan `c2.amlogic.avc/hevc/vp9/av1.decoder` y ~24 GB libres.
 
 - [ ] **Paso 6: escribir `docs/informes/equipo-xiaomi.md`** con la tabla de decodificadores, el espacio, la RAM y la versión de Android.
@@ -253,7 +253,7 @@ git commit -m "feat(sistema): ficha del equipo y decodificadores 4k (paso 0.3)"
 
 - [ ] **Paso 3: correr la prueba en el Xiaomi**
 
-Run: `tool/videos-prueba.sh && ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=pe.inkaterra.tv.sistema.Reproduccion4kTest && adb -s 192.168.31.242:5555 logcat -d -s Prueba4k`
+Run: `tool/videos-prueba.sh && tool/tv.sh probar pe.inkaterra.tv.sistema.Reproduccion4kTest && adb -s 192.168.31.242:5555 logcat -d -s Prueba4k`
 Expected: PASS, con una línea por video.
 
 - [ ] **Paso 4: fijar D-13 y anotar los resultados**
@@ -363,7 +363,7 @@ Requiere de Adrián: tres memorias USB (o una formateada tres veces) en FAT32, e
 
 - [ ] **Paso 2: correrla con cada formato**
 
-Run: conectar la USB y `ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest -Pandroid.testInstrumentationRunnerArguments.class=pe.inkaterra.tv.sistema.VolumenesUsbTest && adb -s 192.168.31.242:5555 logcat -d -s Usb`
+Run: conectar la USB y `tool/tv.sh probar pe.inkaterra.tv.sistema.VolumenesUsbTest && adb -s 192.168.31.242:5555 logcat -d -s Usb`
 Expected: por cada formato, anotar si monta, si se lee directo o solo por MediaStore, y si la foto HEIC se decodifica (`ImageDecoder.decodeBitmap`).
 
 - [ ] **Paso 3: retirar la USB durante la lectura** (foco de revisión 3)
@@ -389,7 +389,7 @@ git commit -m "feat(sistema): detectar y leer memorias usb (paso 0.7)"
 
 - [ ] **Paso 1: correr todo lo del CI y las pruebas en el Xiaomi**
 
-Run: `cd apps/tv && ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug && ANDROID_SERIAL=192.168.31.242:5555 ./gradlew connectedDebugAndroidTest`
+Run: `(cd apps/tv && ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug) && tool/tv.sh probar`
 Expected: BUILD SUCCESSFUL y todas las pruebas en verde. `VolumenesUsbTest` necesita una USB conectada; si no hay, se corre con `-Pandroid.testInstrumentationRunnerArguments.notClass=pe.inkaterra.tv.sistema.VolumenesUsbTest` y se dice en el informe.
 
 - [ ] **Paso 2: borrar el código de exploración que ninguna decisión adoptó** y repetir el paso 1.
