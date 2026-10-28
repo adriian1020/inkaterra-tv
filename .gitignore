@@ -1,0 +1,23 @@
+# Gradle y Android
+.gradle/
+build/
+local.properties
+.kotlin/
+*.apk
+*.aab
+captures/
+
+# Editores
+.idea/
+*.iml
+.vscode/
+
+# Muestras de video y fotos: pesan mucho y no se versionan
+muestras/
+
+# Espacio de trabajo de los agentes
+.superpowers/
+
+# Sistema
+.DS_Store
+Thumbs.db
