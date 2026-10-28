@@ -83,3 +83,30 @@ Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
 - **Pendiente:** repetir `Reproduccion4kTest` en la TCL del piloto (sprint 5) y con una pantalla
   4K conectada; hoy el Xiaomi está en una pantalla 1080p, así que se midió la decodificación 4K,
   no la salida.
+
+## D-14. Pantalla principal: Google TV no la cede a una app normal
+
+- **Qué se probó (paso 0.5, Xiaomi con Google TV 14):** la app con el filtro `HOME` y
+  `adb shell cmd package set-home-activity pe.inkaterra.tv/.app.MainActivity`. El comando
+  responde «Success», pero la tecla Inicio sigue abriendo el inicio de Google TV
+  (`com.google.android.apps.tv.launcherx`).
+- **Qué queda para decidir antes del sprint 5:**
+  1. **App normal** (lo de hoy): el huésped la abre desde la fila de apps; las promociones
+     salen con el protector de pantalla (D-16).
+  2. **Equipo administrado** (`device owner`): la app manda en la TV (pantalla principal,
+     arranque, actualizaciones sin preguntar). Exige restablecer de fábrica cada TCL y
+     configurarla sin cuenta de Google antes de `adb shell dpm set-device-owner`. No se probó:
+     no se restablece el equipo de Adrián.
+  3. **Desactivar el inicio de Google TV** con `adb shell pm disable-user --user 0
+     com.google.android.apps.tv.launcherx`, para que Android use la app como inicio. Es
+     reversible (`pm enable`), pero deja la TV sin el inicio de Google y sin las
+     recomendaciones de YouTube o Netflix. No se probó en el equipo de Adrián.
+
+## D-15. Arranque al encender: bloqueado en Google TV 14
+
+- **Qué se probó:** un receptor de `BOOT_COMPLETED` que abre la app. Android lo despierta, pero
+  bloquea la pantalla («Background activity launch blocked», `BAL_BLOCK`).
+- **Con el permiso de mostrarse sobre otras apps** (`appops set … SYSTEM_ALERT_WINDOW allow`):
+  Google TV lo devuelve a `default` al reiniciar y el arranque sigue bloqueado.
+- **Decisión:** no se agrega el receptor. Abrir la app al encender solo es posible con la
+  opción 2 o 3 de D-14, y esa decisión llega antes del sprint 5.
