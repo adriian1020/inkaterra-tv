@@ -71,3 +71,15 @@ Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
 - **Pruebas en la TV con `tool/tv.sh probar`.** Con la TV conectada por red (`adb connect`),
   `connectedDebugAndroidTest` de AGP 9.4 termina en error aunque todas las pruebas pasen. El
   script instala los dos APK y corre `am instrument`; falla si la salida no dice `OK (`.
+
+## D-13. Tasa máxima de video: 60 Mbps
+
+- **Qué:** se aceptan videos H.264 o HEVC de hasta 3840 × 2160 y **60 Mbps**. Es el límite de
+  `TASA_MAXIMA_BPS` en las reglas de contenido (sprint 1).
+- **Por qué:** en el Xiaomi TV Box S (paso 0.4), H.264 y HEVC a 20, 40 y 60 Mbps se
+  reprodujeron 20 s sin perder ni un cuadro, igual que HEVC a 60 fps (40 Mbps) y HEVC de 10 bits
+  a 120 Mbps. 60 Mbps es la tasa más alta probada en los **dos** formatos; deja margen para la
+  TCL, que tiene otro chip, y un video de hotel bien exportado rara vez pasa de 40 Mbps.
+- **Pendiente:** repetir `Reproduccion4kTest` en la TCL del piloto (sprint 5) y con una pantalla
+  4K conectada; hoy el Xiaomi está en una pantalla 1080p, así que se midió la decodificación 4K,
+  no la salida.

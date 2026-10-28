@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# Genera videos 4K de prueba a distintas tasas y los copia a la TV, para medir con
+# Reproduccion4kTest qué reproduce fluido. Cada video lleva ruido para que el codificador no
+# pueda comprimirlo de más y la tasa real se acerque a la pedida.
+#   tool/videos-prueba.sh            genera lo que falte y copia todo a la TV
+set -euo pipefail
+# Git Bash convierte las rutas que empiezan con / en rutas de Windows; las de la TV no deben cambiar.
+export MSYS_NO_PATHCONV=1
+
+TV=${TV:-192.168.31.242:5555}
+raiz="$(cd "$(dirname "$0")/.." && pwd)"
+salida="$raiz/muestras/prueba-4k"
+destino=/sdcard/Android/data/pe.inkaterra.tv/files/prueba-4k
+segundos=25
+
+ffmpeg=$(command -v ffmpeg || echo "$LOCALAPPDATA/Microsoft/WinGet/Links/ffmpeg.exe")
+[ -x "$ffmpeg" ] || { echo "Falta ffmpeg: winget install --id Gyan.FFmpeg -e" >&2; exit 1; }
+mkdir -p "$salida"
+
+# nombre  códec  tasa(Mbps)  fps  formato de píxel
+casos=(
+  "h264-20m.mp4    libx264 20  30 yuv420p"
+  "h264-40m.mp4    libx264 40  30 yuv420p"
+  "h264-60m.mp4    libx264 60  30 yuv420p"
+  "hevc-20m.mp4    libx265 20  30 yuv420p"
+  "hevc-40m.mp4    libx265 40  30 yuv420p"
+  "hevc-60m.mp4    libx265 60  30 yuv420p"
+  "hevc-60fps-40m.mp4 libx265 40 60 yuv420p"
+  "hevc10-120m.mkv libx265 120 30 yuv420p10le"
+)
+
+for caso in "${casos[@]}"; do
+  read -r nombre codec tasa fps pixel <<<"$caso"
+  [ -f "$salida/$nombre" ] && continue
+  echo "Generando $nombre…"
+  etiqueta=()
+  [ "$codec" = libx265 ] && etiqueta=(-tag:v hvc1)
+  "$ffmpeg" -hide_banner -loglevel error -y \
+    -f lavfi -i "testsrc2=size=3840x2160:rate=$fps,noise=alls=12:allf=t" \
+    -f lavfi -i "sine=frequency=440:sample_rate=48000" \
+    -t "$segundos" -c:v "$codec" -preset ultrafast -pix_fmt "$pixel" "${etiqueta[@]}" \
+    -b:v "${tasa}M" -minrate "${tasa}M" -maxrate "${tasa}M" -bufsize "$((tasa * 2))M" \
+    -c:a aac -b:a 128k "$salida/$nombre"
+done
+
+adb connect "$TV" >/dev/null 2>&1 || true
+adb -s "$TV" shell mkdir -p "$destino"
+for archivo in "$salida"/*; do
+  adb -s "$TV" push "$(cygpath -w "$archivo" 2>/dev/null || echo "$archivo")" "$destino/" >/dev/null
+  echo "Copiado $(basename "$archivo")"
+done

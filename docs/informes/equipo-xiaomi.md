@@ -32,3 +32,23 @@ Los decodificadores por software de Android (`c2.android.*`, `OMX.google.*`) lle
 
 La tasa declarada es lo que el decodificador acepta, no lo que reproduce fluido. Lo fluido se
 mide en el paso 0.4.
+
+## Reproducción 4K (paso 0.4)
+
+`Reproduccion4kTest`, 28 de octubre: cada video de `tool/videos-prueba.sh` (3840 × 2160, 25 s,
+con ruido para que la tasa real sea la pedida) se reprodujo 20 s en pantalla con Media3.
+
+| Video | Decodificador | Cuadros mostrados | Perdidos |
+|---|---|---|---|
+| H.264, 20 Mbps | `c2.amlogic.avc.decoder` | 556 | 0 |
+| H.264, 40 Mbps | `c2.amlogic.avc.decoder` | 588 | 0 |
+| H.264, 60 Mbps | `c2.amlogic.avc.decoder` | 587 | 0 |
+| HEVC, 20 Mbps | `c2.amlogic.hevc.decoder` | 587 | 0 |
+| HEVC, 40 Mbps | `c2.amlogic.hevc.decoder` | 588 | 0 |
+| HEVC, 60 Mbps | `c2.amlogic.hevc.decoder` | 588 | 0 |
+| HEVC, 60 fps, 40 Mbps | `c2.amlogic.hevc.decoder` | 1177 | 0 |
+| HEVC 10 bits, 120 Mbps (MKV) | `c2.amlogic.hevc.decoder` | 584 | 0 |
+
+Un archivo dañado se registra como «no reproduce» y la prueba sigue
+(`videoImposibleSeRegistraYSigue`). La pantalla conectada es 1080p: Android decodifica el 4K y lo
+escala. Con esto se fija D-13 en 60 Mbps.
