@@ -22,10 +22,12 @@ class CapacidadesEquipoTest {
         val gb = 1024.0 * 1024 * 1024
 
         Log.i("Ficha", "Equipo: ${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE}")
-        Log.i("Ficha", "Memoria total: %.2f GB".format(CapacidadesEquipo.memoriaTotalBytes(contexto) / gb))
-        val externo = requireNotNull(contexto.getExternalFilesDir(null))
-        Log.i("Ficha", "Libre en archivos externos: %.2f GB".format(CapacidadesEquipo.espacioLibreBytes(externo) / gb))
-        Log.i("Ficha", "Libre en archivos internos: %.2f GB".format(CapacidadesEquipo.espacioLibreBytes(contexto.filesDir) / gb))
+        val memoria = CapacidadesEquipo.memoriaTotalBytes(contexto) / gb
+        val externo = CapacidadesEquipo.espacioLibreBytes(requireNotNull(contexto.getExternalFilesDir(null))) / gb
+        val interno = CapacidadesEquipo.espacioLibreBytes(contexto.filesDir) / gb
+        Log.i("Ficha", "Memoria total: %.2f GB".format(memoria))
+        Log.i("Ficha", "Libre en archivos externos: %.2f GB".format(externo))
+        Log.i("Ficha", "Libre en archivos internos: %.2f GB".format(interno))
         decodificadores.forEach {
             Log.i(
                 "Ficha",
