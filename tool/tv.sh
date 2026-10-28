@@ -36,6 +36,8 @@ case "${1:-}" in
     ./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --console=plain -q
     adb -s "$TV" install -r -t app/build/outputs/apk/debug/app-debug.apk >/dev/null
     adb -s "$TV" install -r -t -g app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >/dev/null
+    # Con la TV suspendida las pruebas corren pero no se dibuja nada: despertarla primero.
+    adb -s "$TV" shell input keyevent KEYCODE_WAKEUP
     filtro=()
     [ -n "${2:-}" ] && filtro=(-e class "$2")
     salida=$(adb -s "$TV" shell am instrument -w "${filtro[@]}" pe.inkaterra.tv.test/androidx.test.runner.AndroidJUnitRunner | tr -d '\r')

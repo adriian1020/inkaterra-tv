@@ -22,7 +22,7 @@
 - Las mismas del sprint 0 (idioma, comentarios, commits, ramas, versiones exactas y chequeos del CI antes de cada commit). Las ramas salen de `sprint-1/integracion`, que sale de `sprint-0/integracion`.
 - Carpeta del hotel: `getExternalFilesDir("contenido")`, con las subcarpetas `videos/`, `fotos/`, `musica/` y `promociones/`. Así `adb push` puede escribir sin root: `/sdcard/Android/data/pe.inkaterra.tv/files/contenido/`.
 - Máximo 3840 × 2160. Se compara el lado mayor con 3840 y el menor con 2160, para que los videos verticales de 2160 × 3840 también entren.
-- Video: extensiones `mp4`, `mkv` y `mov`; códecs `video/avc` y `video/hevc`. Foto: `jpg`, `jpeg`, `png`, `webp` y `heic`. Música: `mp3`, `m4a`, `aac` y `flac`. Las extensiones se comparan sin importar mayúsculas.
+- Video: extensiones `mp4`, `mkv`, `mov` y `webm`; códecs `video/avc`, `video/hevc` y `video/x-vnd.on2.vp9` (D-19). Foto: `jpg`, `jpeg`, `png`, `webp` y `heic`. Música: `mp3`, `m4a`, `aac` y `flac`. Las extensiones se comparan sin importar mayúsculas.
 - Tasa máxima de video: `TASA_MAXIMA_BPS` = el valor de D-13. Si el sprint 0 no lo fijó, 40 000 000.
 - Colores: verde `#5A6A40`, verde secundario `#626A45`, crema `#F3F2EE`, texto `#424242`, fondo de la TV `#1E2416`. Letras: Josefin Sans para el texto y Cinzel para los títulos, dentro de la app con su licencia OFL en `assets/licencias/`.
 - Idiomas: español (por omisión, en `values/`) e inglés (`values-en/`). Ningún texto visible va escrito en el código.
@@ -66,6 +66,7 @@ class ReglasContenidoTest {
         assertEquals(TipoContenido.VIDEO, clasificar("Atardecer en Machu Picchu.mp4"))
         assertEquals(TipoContenido.FOTO, clasificar("Reserva Amazónica 01.heic"))
         assertEquals(TipoContenido.MUSICA, clasificar("Selva.flac"))
+        assertEquals(TipoContenido.VIDEO, clasificar("Celular.webm"))
         assertNull(clasificar("documento.pdf"))
     }
     @Test fun extensionEnMayusculas() = assertEquals(TipoContenido.VIDEO, clasificar("VIDEO.MP4"))
@@ -76,6 +77,7 @@ class ReglasContenidoTest {
     @Test fun rechazaCuatroKDeCine() = assertEquals(MotivoRechazo.ResolucionExcedida(4096, 2160), evaluarVideo(v(4096, 2160)))
     @Test fun rechazaCodecNoSoportado() = assertEquals(MotivoRechazo.CodecNoSoportado("video/av01"), evaluarVideo(v(1920, 1080, "video/av01")))
     @Test fun aceptaH264() = assertNull(evaluarVideo(v(1920, 1080, "video/avc")))
+    @Test fun aceptaVp9() = assertNull(evaluarVideo(v(3840, 2160, "video/x-vnd.on2.vp9")))
     @Test fun rechazaTasaExcedida() = assertEquals(MotivoRechazo.TasaExcedida(TASA_MAXIMA_BPS + 1), evaluarVideo(v(3840, 2160, tasa = TASA_MAXIMA_BPS + 1)))
     @Test fun tasaDesconocidaSeAcepta() = assertNull(evaluarVideo(v(3840, 2160, tasa = null)))
 }
@@ -93,7 +95,7 @@ Expected: FAIL.
 - [ ] **Paso 4: correrlas y ver que pasan**
 
 Run: `./gradlew testDebugUnitTest --tests '*ReglasContenidoTest'`
-Expected: PASS, 11 pruebas.
+Expected: PASS, 12 pruebas.
 
 - [ ] **Paso 5: commit y unión**
 
