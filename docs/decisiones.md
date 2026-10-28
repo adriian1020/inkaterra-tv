@@ -1,7 +1,8 @@
 # Decisiones
 
 Las D-01 a D-12 vienen del plan de desarrollo ([plan-de-desarrollo.md](plan-de-desarrollo.md)).
-Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
+Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0, y desde la D-20 lo que
+se decide durante los sprints siguientes.
 
 ## D-01
 
@@ -179,3 +180,41 @@ Desde la D-13 se anota lo que se averigua en la TV durante el sprint 0.
 - **No se acepta AV1:** el Xiaomi lo decodifica, pero solo hasta 40 Mbps declarados, y la TCL
   podría no tenerlo. Se revisa si algún video real lo necesita.
 - **Pendiente:** repetir la prueba de VP9 en la TCL del piloto (sprint 5).
+
+## D-20. Inicio estilo Netflix: área destacada y filas con miniaturas
+
+- **Qué:** el inicio deja de ser tres tarjetas de texto (Videos, Fotos y Música) con una lista
+  de títulos en cada sección, y pasa a ser como el de Netflix en la TV:
+  - **Área destacada** arriba: imagen grande, título y tipo de lo que tiene el foco. Cambia
+    cuando el foco se queda medio segundo en una tarjeta, para que no parpadee al recorrer
+    rápido. Al abrir la app, el foco está en el primer destacado.
+  - **Filas horizontales** de tarjetas 16:9 con miniatura y título: **Destacados**, **Videos**,
+    **Fotos** y **Música**. Las flechas recorren la fila a los lados y cambian de fila arriba y
+    abajo. La tarjeta con el foco crece un poco y lleva borde verde `#5A6A40`. Una fila sin
+    contenido no se muestra; si no hay nada, el área destacada dice «Todavía no hay contenido».
+  - **Destacados** sale de la carpeta `promociones/`: marketing carga una sola vez lo que se
+    ve en la portada y en el bucle de los 5 minutos (CU-05).
+  - **Sin pantallas de sección:** al elegir una tarjeta se abre directo (el reproductor y el
+    visor llegan en el sprint 2). Atrás vuelve a la misma tarjeta. En el inicio, Atrás con el
+    foco en otra fila sube a la primera; en la primera fila sale de la app, como cualquier app
+    de Google TV.
+  - **Miniaturas:** video, un cuadro del propio video; foto, la misma foto reducida; música,
+    la carátula que traiga el archivo o, si no trae, una imagen de la marca. Una sola miniatura
+    de 1280 × 720 en JPEG por archivo, que sirve para la tarjeta y para el área destacada. Se
+    generan en segundo plano la primera vez y se guardan en la caché de la app, con la ruta, el
+    tamaño y la fecha del archivo como clave; mientras tanto se ve un recuadro verde.
+  - **En el sprint 3** se suma la fila «Tu USB», segunda después de Destacados, que aparece al
+    conectar la memoria y se va al retirarla. Sus miniaturas no se guardan en disco (D-10).
+- **Por qué:** pedido a Adrián de que la app sea «estilo Netflix», sin más detalle. Se tomó lo
+  que Netflix hace en la TV y encaja en una habitación de hotel.
+- **Qué no se toma de Netflix, a propósito:**
+  - «Seguir viendo»: el siguiente huésped vería lo que miró el anterior.
+  - Perfiles: cada habitación es una TV con huéspedes que cambian.
+  - Ficha con descripción antes de reproducir: en la Fase 1 solo existe el nombre del archivo.
+    Las descripciones pueden llegar con el panel de la Fase 2.
+  - Avance de video que se reproduce solo en el área destacada: competiría con el 4K por el
+    decodificador. Se puede probar en el Xiaomi más adelante.
+- **Fase 2:** el panel genera las miniaturas al subir (sprint 7) y la TV usa esas en vez de
+  generarlas.
+- **Pendiente:** mostrar una maqueta a quien pidió el estilo Netflix y confirmar que es lo que
+  esperaba.

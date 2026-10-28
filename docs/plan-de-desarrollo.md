@@ -109,6 +109,7 @@ La app de TV agregaría un dominio más al edge (por ejemplo `tv.inkaterra.pe`) 
 | D-10 | La USB del huésped se lee sin copiar nada y sin guardar rastro | Son fotos personales; el próximo huésped no debe ver nada |
 | D-11 | El mismo contenido del hotel en todas las TVs (Fase 1) | Pedido del proyecto. La Fase 2 permite separar por hotel si hace falta |
 | D-12 | Marca tomada de la web: verde `#5A6A40`, Josefin Sans y Cinzel en lugar de Trajan Pro | Trajan Pro es de pago; Cinzel es libre y parecida |
+| D-20 | Inicio estilo Netflix: área destacada arriba y filas con miniaturas (Destacados, Videos, Fotos y Música), sin pantallas de sección | Pedido a Adrián. El detalle, y lo que no se toma de Netflix, en [decisiones.md](decisiones.md) |
 
 ### Decisiones pendientes
 
@@ -249,7 +250,7 @@ flowchart LR
 
 | Código | Caso de uso | Actor | Fase |
 | --- | --- | --- | --- |
-| CU-01 | Navegar el inicio con el control remoto, en español o inglés | Huésped | 1 |
+| CU-01 | Navegar el inicio (área destacada y filas con miniaturas) con el control remoto, en español o inglés | Huésped | 1 |
 | CU-02 | Ver videos (hasta 4K) | Huésped | 1 |
 | CU-03 | Ver fotos en presentación, con música de fondo | Huésped | 1 |
 | CU-04 | Escuchar música | Huésped | 1 |
@@ -386,7 +387,7 @@ gantt
 | Semana | Sprint | Fechas | Objetivo | Se acepta cuando |
 | --- | --- | --- | --- | --- |
 | 1 | S0 Preparación | 26 al 30 oct | Ficha del Xiaomi, prueba de 4K, límites de Google TV, repositorio y CI | Una app mínima del CI reproduce 4K en el Xiaomi y hay un informe de lo que permite Google TV |
-| 2 | S1 Base y navegación | 2 al 6 nov | Tema Inkaterra, inicio, control remoto, idioma y biblioteca local | Se recorre todo el inicio con el control y se listan los archivos |
+| 2 | S1 Base y navegación | 2 al 6 nov | Tema Inkaterra, inicio estilo Netflix con miniaturas, control remoto, idioma y biblioteca local | Se recorre todo el inicio con el control y cada archivo sale con su miniatura |
 | 3 | S2 Video y fotos | 9 al 13 nov | Reproductor de video 4K y presentación de fotos | Video 4K completo y presentación sin trabas en el Xiaomi |
 | 4 | S3 Música y USB del huésped | 16 al 20 nov | Música con teclas del control, fotos con música, USB del huésped | Suena una lista, y una USB de celular se ve y no deja rastro |
 | 5 | S4 Promociones | 23 al 27 nov | Promociones sin fin a los 5 minutos sin uso | Siguen horas sin que la TV se suspenda y una tecla devuelve al huésped |
@@ -432,12 +433,13 @@ El objetivo es no construir sobre supuestos. Todo lo que depende de la TV se pru
 **Sprint 1: base y navegación (2 al 6 nov)**
 
 - Tema de Inkaterra (ver «Imagen de marca»): verde `#5A6A40`, Josefin Sans y Cinzel dentro de la app, y el logo.
-- Pantalla de inicio para TV, con secciones Videos, Fotos y Música («Información» solo si se decide antes del sprint 4).
+- Inicio estilo Netflix (D-20): área destacada arriba con lo que tiene el foco, y filas Destacados (las promociones), Videos, Fotos y Música («Información» solo si se decide antes del sprint 4).
+- Miniaturas: un cuadro de cada video, la foto reducida y la carátula de cada canción, generadas una vez y guardadas en la caché.
 - Navegación completa con el control remoto: foco siempre visible y tecla Atrás coherente.
 - Elegir idioma (español o inglés) y recordarlo.
 - Biblioteca local: leer la carpeta de contenido de la app, clasificar por tipo y aplicar las reglas de contenido (`dominio/`).
 
-**Se acepta cuando:** se recorre todo el inicio con el control de la TCL y se ven listados los archivos de la carpeta de contenido.
+**Se acepta cuando:** se recorre todo el inicio con el control de la TCL, cada archivo de la carpeta de contenido sale en su fila con su miniatura, el área destacada sigue al foco y Atrás vuelve a la tarjeta de origen.
 
 **Sprint 2: video y fotos (9 al 13 nov)**
 
@@ -452,7 +454,7 @@ El objetivo es no construir sobre supuestos. Todo lo que depende de la TV se pru
 - Reproductor de música con `MediaSession`: las teclas de reproducción del control funcionan.
 - Listas, repetir y orden aleatorio.
 - Presentación de fotos con música de fondo.
-- **USB del huésped** (CU-17): detectar cuándo se conecta y se retira, recorrer sus carpetas y ver fotos (también HEIC) y videos con los reproductores del sprint 2, sin copiar nada.
+- **USB del huésped** (CU-17): detectar cuándo se conecta y se retira, mostrar la fila «Tu USB» en el inicio (D-20), recorrer sus carpetas y ver fotos (también HEIC) y videos con los reproductores del sprint 2, sin copiar nada.
 
 **Se acepta cuando:** suena una lista completa, las fotos pasan con música de fondo, y una USB con fotos de celular se ve al conectarla y no deja rastro al retirarla.
 
@@ -677,7 +679,9 @@ Una historia está terminada cuando:
 - [x]  Crear el repositorio privado `adriian1020/inkaterra-tv`
 - [x]  Partir el sprint 0 y el sprint 1 en pasos numerados, con sus pruebas
 - [x]  Sprint 0 (28 de octubre): ver el [informe del sprint 0](informes/sprint-0.md) y las decisiones D-13 a D-19
+- [x]  Sprint 1 (28 de octubre): ver el [informe del sprint 1](informes/sprint-1.md) y la decisión D-20
 - [ ]  Subir `sprint-0/integracion` y abrir su PR hacia `main`
+- [ ]  Mostrar el inicio estilo Netflix (las capturas del informe del sprint 1 o la app en el Xiaomi) a quien lo pidió y confirmarlo (D-20)
 - [ ]  Probar una memoria USB en la TV (D-18), antes del sprint 3
 - [ ]  Decidir pantalla principal: app normal, equipo administrado o reemplazar el inicio de Google TV (D-14), antes del sprint 5
 - [ ]  Conseguir una TCL para el piloto del sprint 5
