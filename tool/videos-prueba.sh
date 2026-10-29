@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Genera videos 4K de prueba a distintas tasas y los copia a la TV, para medir con
-# Reproduccion4kTest qué reproduce fluido. Cada video lleva ruido para que el codificador no
-# pueda comprimirlo de más y la tasa real se acerque a la pedida.
+# Genera videos de prueba a distintas tasas y los copia a la TV, para medir con Reproduccion4kTest
+# qué reproduce fluido y con LectorMetadatosEquipoTest qué decodifica. Cada video lleva ruido para
+# que el codificador no pueda comprimirlo de más y la tasa real se acerque a la pedida.
 #   tool/videos-prueba.sh            genera lo que falte y copia todo a la TV
 set -euo pipefail
 # Git Bash convierte las rutas que empiezan con / en rutas de Windows; las de la TV no deben cambiar.
@@ -20,23 +20,25 @@ mkdir -p "$salida"
 # ffmpeg y adb son programas de Windows: las rutas locales van en formato de Windows.
 ruta_local() { cygpath -w "$1" 2>/dev/null || echo "$1"; }
 
-# nombre  códec  tasa(Mbps)  fps  formato de píxel
+# nombre  códec  tasa(Mbps)  fps  formato de píxel  tamaño
+# H.264 4:4:4 va en 1080p: es AVC pero la TV no tiene decodificador para ese perfil (D-21).
 casos=(
-  "h264-20m.mp4    libx264 20  30 yuv420p"
-  "h264-40m.mp4    libx264 40  30 yuv420p"
-  "h264-60m.mp4    libx264 60  30 yuv420p"
-  "hevc-20m.mp4    libx265 20  30 yuv420p"
-  "hevc-40m.mp4    libx265 40  30 yuv420p"
-  "hevc-60m.mp4    libx265 60  30 yuv420p"
-  "hevc-60fps-40m.mp4 libx265 40 60 yuv420p"
-  "hevc10-120m.mkv libx265 120 30 yuv420p10le"
-  "vp9-20m.webm    libvpx-vp9 20 30 yuv420p"
-  "vp9-40m.webm    libvpx-vp9 40 30 yuv420p"
-  "vp9-60m.webm    libvpx-vp9 60 30 yuv420p"
+  "h264-20m.mp4    libx264 20  30 yuv420p 3840x2160"
+  "h264-40m.mp4    libx264 40  30 yuv420p 3840x2160"
+  "h264-60m.mp4    libx264 60  30 yuv420p 3840x2160"
+  "hevc-20m.mp4    libx265 20  30 yuv420p 3840x2160"
+  "hevc-40m.mp4    libx265 40  30 yuv420p 3840x2160"
+  "hevc-60m.mp4    libx265 60  30 yuv420p 3840x2160"
+  "hevc-60fps-40m.mp4 libx265 40 60 yuv420p 3840x2160"
+  "hevc10-120m.mkv libx265 120 30 yuv420p10le 3840x2160"
+  "vp9-20m.webm    libvpx-vp9 20 30 yuv420p 3840x2160"
+  "vp9-40m.webm    libvpx-vp9 40 30 yuv420p 3840x2160"
+  "vp9-60m.webm    libvpx-vp9 60 30 yuv420p 3840x2160"
+  "h264-444.mp4    libx264 8   30 yuv444p 1920x1080"
 )
 
 for caso in "${casos[@]}"; do
-  read -r nombre codec tasa fps pixel <<<"$caso"
+  read -r nombre codec tasa fps pixel tamano <<<"$caso"
   [ -f "$salida/$nombre" ] && continue
   echo "Generando $nombre…"
   # Cada códec tiene sus propias opciones de velocidad; WEBM no admite audio AAC, lleva Opus.
@@ -48,7 +50,7 @@ for caso in "${casos[@]}"; do
   audio=(-c:a aac -b:a 128k)
   [ "${nombre##*.}" = webm ] && audio=(-c:a libopus -b:a 128k)
   "$ffmpeg" -hide_banner -loglevel error -y \
-    -f lavfi -i "testsrc2=size=3840x2160:rate=$fps,noise=alls=12:allf=t" \
+    -f lavfi -i "testsrc2=size=$tamano:rate=$fps,noise=alls=12:allf=t" \
     -f lavfi -i "sine=frequency=440:sample_rate=48000" \
     -t "$segundos" -c:v "$codec" "${opciones[@]}" -pix_fmt "$pixel" \
     -b:v "${tasa}M" -minrate "${tasa}M" -maxrate "${tasa}M" -bufsize "$((tasa * 2))M" \
