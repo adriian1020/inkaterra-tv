@@ -681,7 +681,10 @@ Una historia está terminada cuando:
 - [x]  Partir el sprint 0 y el sprint 1 en pasos numerados, con sus pruebas
 - [x]  Sprint 0 (28 de octubre): ver el [informe del sprint 0](informes/sprint-0.md) y las decisiones D-13 a D-19
 - [x]  Sprint 1 (28 de octubre): ver el [informe del sprint 1](informes/sprint-1.md) y la decisión D-20
-- [ ]  Subir `sprint-0/integracion` y abrir su PR hacia `main`
+- [x]  Sprint 2 (28 de octubre): ver el [informe del sprint 2](informes/sprint-2.md) y la decisión D-21
+- [x]  Subir los sprints 0 y 1 y unirlos a `main` (PR 1 y 2)
+- [ ]  Mirar en la TV el paso de un video H.264 a uno HEVC (en la captura por adb sale negro)
+- [ ]  Decidir si los videos de 60 Mbps que miden un poco más (60,6) deben entrar (D-13)
 - [ ]  Mostrar el inicio estilo Netflix (las capturas del informe del sprint 1 o la app en el Xiaomi) a quien lo pidió y confirmarlo (D-20)
 - [ ]  Probar una memoria USB en la TV (D-18), antes del sprint 3
 - [ ]  Decidir pantalla principal: app normal, equipo administrado o reemplazar el inicio de Google TV (D-14), antes del sprint 5
