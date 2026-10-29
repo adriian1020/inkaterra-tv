@@ -30,4 +30,8 @@
         <item quantity="one">%d file can’t be shown on this TV</item>
         <item quantity="other">%d files can’t be shown on this TV</item>
     </plurals>
+    <string name="video_anterior">Previous video</string>
+    <string name="video_retroceder">Back 10 seconds</string>
+    <string name="video_adelantar">Forward 10 seconds</string>
+    <string name="video_siguiente">Next video</string>
 </resources>

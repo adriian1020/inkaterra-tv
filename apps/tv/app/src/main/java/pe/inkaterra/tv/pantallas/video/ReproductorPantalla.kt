@@ -1,6 +1,8 @@
 // El reproductor de video a pantalla completa con el control (D-21): Enter pausa, Izquierda y
-// Derecha saltan 10 s, Atrás vuelve al inicio y retoma la próxima vez. Al terminar sigue el
-// próximo video de la fila; un video que no se puede reproducir muestra un mensaje y también sigue.
+// Derecha saltan 10 s, Atrás vuelve al inicio y retoma la próxima vez. Con la barra a la vista, las
+// flechas recorren sus botones: anterior, retroceder, pausar, adelantar y siguiente (D-23). Al
+// terminar sigue el próximo video de la fila; un video que no se puede reproducir muestra un
+// mensaje y también sigue.
 // La imagen va en un SurfaceView: es la única superficie que mantiene el 4K por hardware sin perder
 // cuadros en el Xiaomi.
 @file:OptIn(UnstableApi::class)
@@ -14,7 +16,11 @@ import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +45,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -71,6 +78,7 @@ private const val ETIQUETA = "Reproductor"
 private const val BARRA_MS = 5_000L
 private const val ERROR_MS = 3_000L
 private const val REFRESCO_MS = 500L
+private const val REINICIO_MS = 3_000L
 
 private val teclas =
     mapOf(
@@ -82,6 +90,9 @@ private val teclas =
         Key.DirectionRight to AccionVideo.ADELANTAR,
         Key.MediaFastForward to AccionVideo.ADELANTAR,
     )
+
+// Las que funcionan aunque la barra esté a la vista (D-23).
+private val teclasDeMedios = setOf(Key.MediaPlayPause, Key.MediaRewind, Key.MediaFastForward)
 
 private class Cuadros(
     val contadores: DecoderCounters? = null,
@@ -120,6 +131,7 @@ fun ReproductorPantalla(
     // cada video para que el registro sea de ese video.
     var alEmpezar by remember { mutableStateOf(Cuadros()) }
     val foco = remember { FocusRequester() }
+    val focoBotones = remember { FocusRequester() }
 
     fun cuadros(): Cuadros {
         val contadores = player.videoDecoderCounters ?: return Cuadros()
@@ -230,15 +242,48 @@ fun ReproductorPantalla(
         onDispose { vista.keepScreenOn = false }
     }
 
-    BackHandler {
+    fun salir() {
         registrarCuadros()
         guardarPosicion()
         alSalirActual(videos[actual])
     }
 
+    BackHandler { salir() }
+
+    fun hacer(accion: AccionVideo) {
+        when (accion) {
+            AccionVideo.ALTERNAR -> {
+                if (player.playWhenReady) player.pause() else player.play()
+                pausado = !player.playWhenReady
+            }
+            else -> destinoSalto(accion, player.currentPosition, player.duration)?.let(player::seekTo)
+        }
+        refrescarTiempo()
+        toques++
+    }
+
+    // «Anterior» vuelve al principio si ya pasaron 3 s; si no, va al video anterior de la fila (D-23).
+    fun irAlAnterior() {
+        val anterior = anteriorVideo(videos, actual)
+        if (player.currentPosition > REINICIO_MS || anterior == null) {
+            player.seekTo(0)
+            refrescarTiempo()
+        } else {
+            registrarCuadros()
+            guardarPosicion()
+            actual = anterior
+        }
+        toques++
+    }
+
     LaunchedEffect(Unit) { foco.requestFocus() }
 
+    // Con la barra a la vista, el foco está en los botones (lo piden ellos al aparecer); al esconderse,
+    // vuelve a la pantalla, donde las teclas funcionan como antes.
+    LaunchedEffect(barraVisible) { if (!barraVisible) foco.requestFocus() }
+
     val presentacion = rememberPresentationState(player)
+
     Box(
         modifier =
             Modifier
@@ -246,19 +291,23 @@ fun ReproductorPantalla(
                 .background(Color.Black)
                 .focusRequester(foco)
                 .onPreviewKeyEvent { evento ->
+                    // Atrás se atiende aquí, antes que el foco: en la TV, Compose usaba el primer Atrás para
+                    // sacar el foco de los botones a la pantalla, y recién el segundo salía (D-23).
+                    if (evento.key == Key.Back) {
+                        if (evento.type == KeyEventType.KeyUp) salir()
+                        return@onPreviewKeyEvent true
+                    }
                     val accion = teclas[evento.key] ?: return@onPreviewKeyEvent false
+                    // Con la barra a la vista, las flechas y Enter son de los botones; cada tecla vuelve a
+                    // contar los 5 s de la barra. Las teclas de medios funcionan siempre.
+                    if (barraVisible && evento.key !in teclasDeMedios) {
+                        if (evento.type == KeyEventType.KeyDown) toques++
+                        return@onPreviewKeyEvent false
+                    }
                     // Enter mantenido no alterna una y otra vez; las flechas mantenidas sí saltan.
                     val repetida = evento.nativeKeyEvent.repeatCount > 0
                     if (evento.type == KeyEventType.KeyDown && !(repetida && accion == AccionVideo.ALTERNAR)) {
-                        when (accion) {
-                            AccionVideo.ALTERNAR -> {
-                                if (player.playWhenReady) player.pause() else player.play()
-                                pausado = !player.playWhenReady
-                            }
-                            else -> destinoSalto(accion, player.currentPosition, player.duration)?.let(player::seekTo)
-                        }
-                        refrescarTiempo()
-                        toques++
+                        hacer(accion)
                     }
                     true
                 }.focusable(),
@@ -278,13 +327,32 @@ fun ReproductorPantalla(
         }
         // También con el error: así se ve qué video no se pudo reproducir.
         if (barraVisible) {
-            BarraVideo(
-                titulo = videos[actual].titulo,
-                posicionMs = posicionMs,
-                duracionMs = duracionMs,
-                pausado = pausado,
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
+            Column(Modifier.align(Alignment.BottomCenter), horizontalAlignment = Alignment.CenterHorizontally) {
+                BarraVideo(
+                    titulo = videos[actual].titulo,
+                    posicionMs = posicionMs,
+                    duracionMs = duracionMs,
+                    pausado = pausado,
+                )
+                BotonesVideo(
+                    pausado = pausado,
+                    focoInicial = focoBotones,
+                    alAnterior = ::irAlAnterior,
+                    alRetroceder = { hacer(AccionVideo.RETROCEDER) },
+                    alAlternar = { hacer(AccionVideo.ALTERNAR) },
+                    alAdelantar = { hacer(AccionVideo.ADELANTAR) },
+                    alSiguiente = {
+                        toques++
+                        pasarAlSiguiente()
+                    },
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .background(ColoresInkaterra.fondo)
+                            .padding(bottom = 32.dp)
+                            .wrapContentWidth(),
+                )
+            }
         }
     }
 }

@@ -8,7 +8,6 @@ package pe.inkaterra.tv.pantallas.musica
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,7 +28,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.key.Key
@@ -39,11 +37,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -55,8 +49,6 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
-import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import kotlinx.coroutines.delay
@@ -66,6 +58,7 @@ import pe.inkaterra.tv.datos.biblioteca.Elemento
 import pe.inkaterra.tv.datos.miniaturas.FuenteMiniaturas
 import pe.inkaterra.tv.dominio.Repetir
 import pe.inkaterra.tv.dominio.siguiente
+import pe.inkaterra.tv.pantallas.comun.BotonIcono
 import pe.inkaterra.tv.pantallas.comun.Miniatura
 import pe.inkaterra.tv.pantallas.video.BarraVideo
 
@@ -239,25 +232,25 @@ fun ReproductorMusicaPantalla(
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                Boton(R.drawable.ic_anterior, stringResource(R.string.musica_anterior), "musica-anterior") {
+                BotonIcono(R.drawable.ic_anterior, stringResource(R.string.musica_anterior), "musica-anterior") {
                     player.seekToPrevious()
                 }
-                Boton(
+                BotonIcono(
                     if (pausado) R.drawable.ic_reproducir else R.drawable.ic_pausa,
                     stringResource(if (pausado) R.string.musica_reproducir else R.string.musica_pausar),
                     "musica-alternar",
                     Modifier.focusRequester(foco),
                 ) { alternar() }
-                Boton(R.drawable.ic_siguiente, stringResource(R.string.musica_siguiente), "musica-siguiente") {
+                BotonIcono(R.drawable.ic_siguiente, stringResource(R.string.musica_siguiente), "musica-siguiente") {
                     player.seekToNext()
                 }
-                Boton(
+                BotonIcono(
                     R.drawable.ic_aleatorio,
                     stringResource(if (aleatorio) R.string.musica_aleatorio_si else R.string.musica_aleatorio_no),
                     "musica-aleatorio",
                     activo = aleatorio,
                 ) { aleatorio = !aleatorio }
-                Boton(
+                BotonIcono(
                     if (repetir == Repetir.UNA) R.drawable.ic_repetir_una else R.drawable.ic_repetir,
                     stringResource(
                         when (repetir) {
@@ -277,29 +270,6 @@ fun ReproductorMusicaPantalla(
             duracionMs = duracionMs,
             pausado = pausado,
             modifier = Modifier.align(Alignment.BottomCenter),
-        )
-    }
-}
-
-// Un botón con ícono; apagado (aleatorio o sin repetir) se ve tenue. El color lo pone el botón, que cambia con el foco. La descripción es lo que
-// dice el lector de pantalla y lo que leen las pruebas.
-@Composable
-private fun Boton(
-    @DrawableRes icono: Int,
-    descripcion: String,
-    etiqueta: String,
-    modifier: Modifier = Modifier,
-    activo: Boolean = true,
-    alElegir: () -> Unit,
-) {
-    IconButton(
-        onClick = alElegir,
-        modifier = modifier.semantics { contentDescription = descripcion }.testTag(etiqueta),
-    ) {
-        Icon(
-            painter = painterResource(icono),
-            contentDescription = null,
-            modifier = Modifier.alpha(if (activo) 1f else 0.4f),
         )
     }
 }

@@ -34,4 +34,8 @@
         <item quantity="one">%d archivo no se puede ver en esta TV</item>
         <item quantity="other">%d archivos no se pueden ver en esta TV</item>
     </plurals>
+    <string name="video_anterior">Video anterior</string>
+    <string name="video_retroceder">Retroceder 10 segundos</string>
+    <string name="video_adelantar">Adelantar 10 segundos</string>
+    <string name="video_siguiente">Video siguiente</string>
 </resources>
