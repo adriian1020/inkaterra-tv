@@ -2,6 +2,7 @@
 // está en la pila de navegación: al volver de un video no se vuelve a leer la carpeta.
 package pe.inkaterra.tv.pantallas.inicio
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,6 +26,11 @@ class InicioModelo(
     val estado: StateFlow<EstadoInicio> = _estado.asStateFlow()
 
     init {
-        viewModelScope.launch { _estado.value = EstadoInicio.Listo(filasDe(biblioteca.cargar())) }
+        viewModelScope.launch {
+            val contenido = biblioteca.cargar()
+            // Lo que no entra no se muestra; queda en el registro para quien cargó el contenido.
+            contenido.rechazados.forEach { Log.w("Contenido", "${it.archivo.nombre}: ${it.motivo}") }
+            _estado.value = EstadoInicio.Listo(filasDe(contenido))
+        }
     }
 }

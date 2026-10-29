@@ -59,4 +59,18 @@ class ReglasContenidoTest {
 
     @Test
     fun tasaDesconocidaSeAcepta() = assertNull(evaluarVideo(v(3840, 2160, tasa = null)))
+
+    @Test
+    fun rechazaSinDecodificador() =
+        assertEquals(
+            MotivoRechazo.SinDecodificador("video/avc"),
+            evaluarVideo(MetadatosVideo(1920, 1080, "video/avc", 8_000_000, decodificable = false)),
+        )
+
+    @Test
+    fun primeroLaResolucion() =
+        assertEquals(
+            MotivoRechazo.ResolucionExcedida(7680, 4320),
+            evaluarVideo(MetadatosVideo(7680, 4320, "video/avc", null, decodificable = false)),
+        )
 }
