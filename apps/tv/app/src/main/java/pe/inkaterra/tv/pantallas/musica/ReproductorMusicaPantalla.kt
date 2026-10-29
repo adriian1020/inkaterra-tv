@@ -63,7 +63,7 @@ import kotlinx.coroutines.delay
 import pe.inkaterra.tv.R
 import pe.inkaterra.tv.app.ColoresInkaterra
 import pe.inkaterra.tv.datos.biblioteca.Elemento
-import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.datos.miniaturas.FuenteMiniaturas
 import pe.inkaterra.tv.dominio.Repetir
 import pe.inkaterra.tv.dominio.siguiente
 import pe.inkaterra.tv.pantallas.comun.Miniatura
@@ -77,7 +77,7 @@ private const val REFRESCO_MS = 500L
 fun ReproductorMusicaPantalla(
     canciones: List<Elemento>,
     inicial: Int,
-    miniaturas: Miniaturas,
+    miniaturas: FuenteMiniaturas,
     alSalir: (Elemento) -> Unit,
 ) {
     val contexto = LocalContext.current

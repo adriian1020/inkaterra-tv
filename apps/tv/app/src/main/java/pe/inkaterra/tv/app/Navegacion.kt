@@ -2,7 +2,8 @@
 // eligió el idioma, se empieza por ahí. Un video abre el reproductor y una foto el visor, con los
 // videos o las fotos de su fila (en Destacados, solo los de ese tipo); al volver, el foco va a la
 // tarjeta de lo último que se vio (D-21). Una canción abre el reproductor de música con la fila
-// Música (D-22).
+// Música (D-22). Si se retira la USB con una foto o un video de ella abierto, su fila desaparece y
+// se vuelve al inicio.
 package pe.inkaterra.tv.app
 
 import androidx.compose.animation.EnterTransition
@@ -21,7 +22,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pe.inkaterra.tv.datos.biblioteca.Biblioteca
 import pe.inkaterra.tv.datos.biblioteca.Elemento
-import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.datos.miniaturas.FuenteMiniaturas
+import pe.inkaterra.tv.datos.usb.UsbDelHuesped
 import pe.inkaterra.tv.dominio.PosicionesVideo
 import pe.inkaterra.tv.dominio.TipoContenido
 import pe.inkaterra.tv.pantallas.fotos.VisorFotosPantalla
@@ -38,16 +40,17 @@ import pe.inkaterra.tv.sistema.idioma.Idioma
 @Composable
 fun Navegacion(
     biblioteca: Biblioteca,
-    miniaturas: Miniaturas,
+    miniaturas: FuenteMiniaturas,
     posiciones: PosicionesVideo,
     idioma: AjusteIdioma,
+    usb: UsbDelHuesped,
 ) {
     val navegador = rememberNavController()
     val inicial = if (idioma.actual() == null) "idioma" else "inicio"
 
     // El modelo del inicio es el de su entrada en la pila: el reproductor y el visor lo comparten.
     @Composable
-    fun modeloDelInicio(entrada: NavBackStackEntry) = viewModel(entrada) { InicioModelo(biblioteca) }
+    fun modeloDelInicio(entrada: NavBackStackEntry) = viewModel(entrada) { InicioModelo(biblioteca, usb) }
 
     // Sin fundido entre pantallas: durante los 700 ms del fundido, la pantalla que se va seguía
     // recibiendo Enter y Atrás del control.

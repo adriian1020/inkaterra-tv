@@ -25,6 +25,7 @@ class MainActivity : AppCompatActivity() {
                     contenedor.miniaturas,
                     contenedor.posiciones,
                     contenedor.idioma,
+                    contenedor.usb,
                 )
             }
         }

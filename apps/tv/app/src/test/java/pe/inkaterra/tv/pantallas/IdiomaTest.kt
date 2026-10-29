@@ -34,7 +34,9 @@ class IdiomaTest {
 
     private fun abrir(ajuste: AjusteIdiomaFalso) {
         val miniaturas = miniaturasSinImagen(temporal.root)
-        regla.setContent { TemaInkaterra { Navegacion(bibliotecaDePrueba(), miniaturas, PosicionesVideo(), ajuste) } }
+        regla.setContent {
+            TemaInkaterra { Navegacion(bibliotecaDePrueba(), miniaturas, PosicionesVideo(), ajuste, usbDePrueba()) }
+        }
         regla.waitForIdle()
     }
 

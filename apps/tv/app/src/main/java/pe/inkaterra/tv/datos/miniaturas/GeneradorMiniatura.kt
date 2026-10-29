@@ -1,5 +1,5 @@
 // Saca la imagen de una tarjeta del inicio (D-20): un cuadro del video, la foto reducida o la
-// carátula de la canción, para cubrir 1280 × 720 sin deformar.
+// carátula de la canción, para cubrir 1280 × 720 (o el tamaño pedido) sin deformar.
 package pe.inkaterra.tv.datos.miniaturas
 
 import android.graphics.Bitmap
@@ -20,7 +20,11 @@ interface GeneradorMiniatura {
 const val ANCHO_MINIATURA = 1280
 const val ALTO_MINIATURA = 720
 
-class GeneradorMiniaturaAndroid : GeneradorMiniatura {
+// La USB usa un tamaño más chico, porque sus miniaturas viven en memoria (D-22).
+class GeneradorMiniaturaAndroid(
+    private val ancho: Int = ANCHO_MINIATURA,
+    private val alto: Int = ALTO_MINIATURA,
+) : GeneradorMiniatura {
     override fun generar(elemento: Elemento): Bitmap? {
         val ruta = elemento.archivo.ruta
         return when (elemento.tipo) {
@@ -39,8 +43,8 @@ class GeneradorMiniaturaAndroid : GeneradorMiniatura {
         return lector.getScaledFrameAtTime(
             duracionMs * 1000 / 10,
             MediaMetadataRetriever.OPTION_CLOSEST_SYNC,
-            ANCHO_MINIATURA,
-            ALTO_MINIATURA,
+            ancho,
+            alto,
         )
     }
 
@@ -57,14 +61,14 @@ class GeneradorMiniaturaAndroid : GeneradorMiniatura {
         }
     }
 
-    // Se reduce lo justo para cubrir 1280 × 720 (nunca se agranda); el recorte lo hace la tarjeta.
+    // Se reduce lo justo para cubrir el tamaño pedido (nunca se agranda); el recorte lo hace la tarjeta.
     // En memoria normal y no de hardware, para poder guardarla en JPEG.
     private fun decodificar(fuente: ImageDecoder.Source): Bitmap =
         ImageDecoder.decodeBitmap(fuente) { decodificador, info, _ ->
             val escala =
                 max(
-                    ANCHO_MINIATURA / info.size.width.toFloat(),
-                    ALTO_MINIATURA / info.size.height.toFloat(),
+                    ancho / info.size.width.toFloat(),
+                    alto / info.size.height.toFloat(),
                 ).coerceAtMost(1f)
             decodificador.setTargetSize(
                 (info.size.width * escala).roundToInt(),
