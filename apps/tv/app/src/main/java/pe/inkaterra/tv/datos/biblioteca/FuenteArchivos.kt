@@ -4,6 +4,7 @@
 // fotos y videos de cualquier carpeta (D-22).
 package pe.inkaterra.tv.datos.biblioteca
 
+import pe.inkaterra.tv.BuildConfig
 import java.io.File
 import java.io.IOException
 
@@ -16,6 +17,10 @@ data class ArchivoLocal(
     // De la memoria del huésped: sus miniaturas no se guardan en disco (D-10).
     val deUsb: Boolean = false,
 )
+
+// El nombre que va al registro: los de la memoria del huésped, solo en la versión de prueba (D-22).
+fun ArchivoLocal.nombreParaRegistro(depuracion: Boolean = BuildConfig.DEBUG): String =
+    if (deUsb && !depuracion) "(archivo de la USB)" else nombre
 
 interface FuenteArchivos {
     fun listar(): List<ArchivoLocal>

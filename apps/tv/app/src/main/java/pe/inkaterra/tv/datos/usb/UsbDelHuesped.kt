@@ -99,9 +99,11 @@ class UsbDelHuesped(
         when {
             volumen == null -> Unit
             volumen.montado && volumen.raiz != null -> {
-                // Android avisa varias veces por la misma memoria: no se vuelve a leer.
+                // Android avisa varias veces por la misma memoria: no se vuelve a leer. Pero una lectura que
+                // se cortó (se cerró la app mientras leía) se repite, para no quedar en «Leyendo».
                 val actual = _estado.value
-                if ((actual is EstadoUsb.Leyendo || actual is EstadoUsb.Lista) && anterior?.id == volumen.id) return
+                val leyendo = actual is EstadoUsb.Leyendo && lectura?.isActive == true
+                if ((leyendo || actual is EstadoUsb.Lista) && anterior?.id == volumen.id) return
                 if (permiso()) {
                     leer(alcance, volumen, volumen.raiz)
                 } else {

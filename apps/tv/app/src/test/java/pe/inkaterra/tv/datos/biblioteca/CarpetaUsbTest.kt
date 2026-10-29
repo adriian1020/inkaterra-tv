@@ -40,4 +40,22 @@ class CarpetaUsbTest {
     fun sinPermisoLanza() {
         CarpetaUsb(File(temporal.root, "no-existe")).listar()
     }
+
+    // Los nombres de los archivos del huésped van al registro solo en la versión de prueba (D-22).
+    @Test
+    fun nombreParaRegistroOcultaLaUsbEnLaVersionDelHotel() {
+        val usb =
+            ArchivoLocal(
+                "/storage/AB12-34CD/DCIM/Mi viaje.mp4",
+                "Mi viaje.mp4",
+                1,
+                0,
+                esPromocion = false,
+                deUsb = true,
+            )
+        val hotel = archivo("Río Madre de Dios.mp4")
+        assertEquals("Mi viaje.mp4", usb.nombreParaRegistro(depuracion = true))
+        assertTrue("Mi viaje" !in usb.nombreParaRegistro(depuracion = false))
+        assertEquals("Río Madre de Dios.mp4", hotel.nombreParaRegistro(depuracion = false))
+    }
 }

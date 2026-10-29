@@ -57,9 +57,11 @@ import androidx.media3.ui.compose.state.rememberPresentationState
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import kotlinx.coroutines.delay
+import pe.inkaterra.tv.BuildConfig
 import pe.inkaterra.tv.R
 import pe.inkaterra.tv.app.ColoresInkaterra
 import pe.inkaterra.tv.datos.biblioteca.Elemento
+import pe.inkaterra.tv.datos.biblioteca.nombreParaRegistro
 import pe.inkaterra.tv.dominio.AccionVideo
 import pe.inkaterra.tv.dominio.PosicionesVideo
 import pe.inkaterra.tv.dominio.destinoSalto
@@ -130,7 +132,7 @@ fun ReproductorPantalla(
         val base = if (ahora.contadores === alEmpezar.contadores) alEmpezar else Cuadros()
         Log.i(
             ETIQUETA,
-            "${videos[actual].archivo.nombre} | mostrados=${ahora.mostrados - base.mostrados} | " +
+            "${videos[actual].archivo.nombreParaRegistro()} | mostrados=${ahora.mostrados - base.mostrados} | " +
                 "perdidos=${ahora.perdidos - base.perdidos}",
         )
     }
@@ -169,7 +171,10 @@ fun ReproductorPantalla(
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
-                    Log.w(ETIQUETA, "${videos[actual].archivo.nombre}: ${error.errorCodeName}", error)
+                    // El detalle del error trae la ruta: de la USB, solo en la versión de prueba (D-22).
+                    val archivo = videos[actual].archivo
+                    val detalle = error.takeIf { BuildConfig.DEBUG || !archivo.deUsb }
+                    Log.w(ETIQUETA, "${archivo.nombreParaRegistro()}: ${error.errorCodeName}", detalle)
                     errorEn = actual
                 }
             }

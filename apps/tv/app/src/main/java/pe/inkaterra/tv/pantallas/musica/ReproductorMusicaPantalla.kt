@@ -173,7 +173,9 @@ fun ReproductorMusicaPantalla(
         }
     }
 
-    // Si la app pasa a segundo plano (Inicio del control), la música se pausa.
+    // Si la app pasa a segundo plano (Inicio del control), la música se detiene y se vuelve al inicio
+    // (D-22): con la pantalla abierta, la MediaSession seguiría recibiendo la tecla Play del control y
+    // la música volvería a sonar fuera de la app.
     val ciclo = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(ciclo) {
         val observador =
@@ -181,6 +183,7 @@ fun ReproductorMusicaPantalla(
                 if (evento == Lifecycle.Event.ON_STOP) {
                     player.pause()
                     pausado = true
+                    salir()
                 }
             }
         ciclo.addObserver(observador)

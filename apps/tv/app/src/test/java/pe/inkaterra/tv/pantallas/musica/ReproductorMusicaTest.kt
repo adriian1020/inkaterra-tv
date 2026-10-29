@@ -13,6 +13,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
+import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -89,5 +90,15 @@ class ReproductorMusicaTest {
     fun elFocoEmpiezaEnReproducir() {
         abrir()
         regla.onNodeWithTag("musica-alternar").assertIsFocused()
+    }
+
+    // Con Inicio del control la app pasa a segundo plano: la pantalla de música se cierra, así la tecla
+    // Play del control no vuelve a hacer sonar la música fuera de la app (D-22).
+    @Test
+    fun alPasarASegundoPlanoSale() {
+        abrir()
+        regla.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
+        regla.waitForIdle()
+        assertTrue(salida in canciones)
     }
 }
