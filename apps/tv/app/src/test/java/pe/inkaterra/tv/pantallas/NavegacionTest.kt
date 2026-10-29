@@ -18,6 +18,7 @@ import androidx.compose.ui.test.pressKey
 import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.Dispatchers
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -169,11 +170,47 @@ class NavegacionTest {
         foco("tarjeta-MUSICA-0")
     }
 
+    // Atrás en la primera fila lleva a la barra lateral; en la barra, cierra la app (D-23).
     @Test
-    fun atrasEnLaPrimeraFilaSaleDeLaApp() {
+    fun atrasEnLaPrimeraFilaVaALaBarraYDespuesSale() {
         abrir()
         atras()
+        foco("barra-INICIO")
+        assertFalse(regla.activity.isFinishing)
+        atras()
         assertTrue(regla.activity.isFinishing)
+    }
+
+    @Test
+    fun izquierdaAbreLaBarra() {
+        abrir()
+        tecla(Key.DirectionLeft)
+        foco("barra-INICIO")
+    }
+
+    // Al salir de la barra con Derecha, el foco vuelve a la tarjeta donde estaba.
+    @Test
+    fun derechaDesdeLaBarraVuelveALaTarjeta() {
+        abrir()
+        tecla(Key.DirectionRight)
+        tecla(Key.DirectionLeft)
+        tecla(Key.DirectionLeft)
+        foco("barra-INICIO")
+        tecla(Key.DirectionRight)
+        foco("tarjeta-DESTACADOS-0")
+    }
+
+    @Test
+    fun tuUsbSinMemoriaPideConectarla() {
+        abrir()
+        tecla(Key.DirectionLeft)
+        tecla(Key.DirectionDown)
+        foco("barra-USB")
+        tecla(Key.Enter)
+        regla
+            .onNodeWithTag(
+                "aviso-usb",
+            ).assertTextEquals("Conecta tu memoria USB a la TV para ver tus fotos, videos y música")
     }
 
     // Mientras se pasa a lo abierto, el inicio ya no responde: un Enter de más no abre dos veces.
@@ -265,13 +302,14 @@ class NavegacionTest {
         regla.waitForIdle()
     }
 
+    // Con el inicio a la vista, al conectar la memoria se pasa sola a su sección (D-23).
     @Test
-    fun alConectarLaUsbApareceSuFila() {
+    fun alConectarLaUsbApareceSuSeccion() {
         val volumenes = VolumenesFalsos()
         abrir(usb = usbDePrueba(volumenes))
         conectarUsb(volumenes)
-        regla.onNodeWithTag("fila-USB").assertExists()
-        regla.onNodeWithTag("tarjeta-USB-0").assertExists()
+        regla.onNodeWithTag("fila-USB_FOTOS").assertExists()
+        foco("tarjeta-USB_FOTOS-0")
     }
 
     @Test
@@ -279,14 +317,13 @@ class NavegacionTest {
         val volumenes = VolumenesFalsos()
         abrir(usb = usbDePrueba(volumenes))
         conectarUsb(volumenes)
-        tecla(Key.DirectionDown)
-        foco("tarjeta-USB-0")
+        foco("tarjeta-USB_FOTOS-0")
         tecla(Key.Enter)
         regla.onNodeWithTag("foto-titulo").assertExists()
         regla.runOnUiThread { volumenes.retirar() }
         regla.waitForIdle()
         regla.onNodeWithTag("foto-titulo").assertDoesNotExist()
-        regla.onNodeWithTag("fila-USB").assertDoesNotExist()
+        regla.onNodeWithTag("fila-DESTACADOS").assertIsDisplayed()
         foco("tarjeta-DESTACADOS-0")
     }
 }

@@ -38,4 +38,6 @@
     <string name="video_retroceder">Retroceder 10 segundos</string>
     <string name="video_adelantar">Adelantar 10 segundos</string>
     <string name="video_siguiente">Video siguiente</string>
+    <string name="barra_inicio">Inicio</string>
+    <string name="usb_conecta">Conecta tu memoria USB a la TV para ver tus fotos, videos y música</string>
 </resources>

@@ -1,11 +1,12 @@
-// Las filas del inicio van en orden fijo y una fila vacía no se muestra (D-20). La de la USB va
-// segunda y, si la memoria no se puede mostrar, lleva un aviso (D-22).
+// Las filas del inicio van en orden fijo y una fila vacía no se muestra (D-20). La USB es otra
+// sección de la barra lateral, con filas de videos, fotos y música, o un aviso (D-23).
 package pe.inkaterra.tv.pantallas.inicio
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import pe.inkaterra.tv.datos.biblioteca.ContenidoBiblioteca
+import pe.inkaterra.tv.datos.biblioteca.ContenidoUsb
 import pe.inkaterra.tv.datos.biblioteca.Elemento
 import pe.inkaterra.tv.datos.biblioteca.archivo
 import pe.inkaterra.tv.datos.usb.EstadoUsb
@@ -41,28 +42,25 @@ class FilasTest {
     private val usb = montado(File("/storage/AB12-34CD"))
 
     @Test
-    fun laUsbVaDespuesDeDestacados() {
+    fun usbSeparaVideosFotosYMusica() {
         val contenido =
-            ContenidoBiblioteca.VACIO.copy(
-                destacados = listOf(e("Oferta spa.jpg", TipoContenido.FOTO)),
-                videos = listOf(e("Río Madre de Dios.mp4", TipoContenido.VIDEO)),
+            ContenidoUsb(
+                videos = listOf(e("b.mp4", TipoContenido.VIDEO)),
+                fotos = listOf(e("a.jpg", TipoContenido.FOTO)),
+                musica = listOf(e("c.mp3", TipoContenido.MUSICA)),
             )
-        val lista = EstadoUsb.Lista(usb, listOf(e("a.jpg", TipoContenido.FOTO), e("b.mp4", TipoContenido.VIDEO)), 0)
+        val seccion = seccionUsb(EstadoUsb.Lista(usb, contenido, 0))
         assertEquals(
-            listOf(TipoFila.DESTACADOS, TipoFila.USB, TipoFila.VIDEOS),
-            filasDe(contenido, lista).map { it.tipo },
+            listOf(TipoFila.USB_VIDEOS, TipoFila.USB_FOTOS, TipoFila.USB_MUSICA),
+            seccion.filas.map { it.tipo },
         )
+        assertEquals(null, seccion.aviso)
     }
 
     @Test
-    fun usbIlegibleMuestraAviso() {
-        val contenido = ContenidoBiblioteca.VACIO.copy(videos = listOf(e("Río Madre de Dios.mp4", TipoContenido.VIDEO)))
-        val fila = filasDe(contenido, EstadoUsb.NoSeLee(usb, MotivoUsb.FORMATO)).first { it.tipo == TipoFila.USB }
-        assertEquals(AvisoFila.NO_SE_LEE, fila.aviso)
-        assertTrue(fila.elementos.isEmpty())
-    }
+    fun sinMemoriaPideConectarla() = assertEquals(AvisoUsb.SIN_MEMORIA, seccionUsb(EstadoUsb.SinUsb).aviso)
 
     @Test
-    fun avisoSinOtrasFilasNoSeMuestra() =
-        assertTrue(filasDe(ContenidoBiblioteca.VACIO, EstadoUsb.NoSeLee(usb, MotivoUsb.FORMATO)).isEmpty())
+    fun memoriaIlegibleLoDice() =
+        assertEquals(AvisoUsb.NO_SE_LEE, seccionUsb(EstadoUsb.NoSeLee(usb, MotivoUsb.FORMATO)).aviso)
 }

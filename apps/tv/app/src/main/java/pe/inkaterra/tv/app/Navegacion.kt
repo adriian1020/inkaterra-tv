@@ -9,6 +9,7 @@ package pe.inkaterra.tv.app
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
@@ -33,6 +35,7 @@ import pe.inkaterra.tv.pantallas.idioma.IdiomaPantalla
 import pe.inkaterra.tv.pantallas.inicio.EstadoInicio
 import pe.inkaterra.tv.pantallas.inicio.InicioModelo
 import pe.inkaterra.tv.pantallas.inicio.InicioPantalla
+import pe.inkaterra.tv.pantallas.inicio.Seccion
 import pe.inkaterra.tv.pantallas.inicio.TipoFila
 import pe.inkaterra.tv.pantallas.musica.ReproductorMusicaPantalla
 import pe.inkaterra.tv.pantallas.video.ReproductorPantalla
@@ -73,14 +76,34 @@ fun Navegacion(
         composable("inicio") { entrada ->
             val modelo = modeloDelInicio(entrada)
             val estado by modelo.estado.collectAsState()
-            // El botón ofrece el otro idioma.
+            // La barra ofrece el otro idioma.
             val otro = if (idioma.actual() == Idioma.INGLES) Idioma.ESPANOL else Idioma.INGLES
+            // El modelo sabe si el inicio está al frente: al conectar la memoria pasa solo a «Tu USB»
+            // solo si el huésped no está viendo algo (D-23).
+            DisposableEffect(entrada) {
+                val observador =
+                    LifecycleEventObserver { _, evento ->
+                        when (evento) {
+                            Lifecycle.Event.ON_RESUME -> modelo.inicioVisible = true
+                            Lifecycle.Event.ON_PAUSE -> modelo.inicioVisible = false
+                            else -> Unit
+                        }
+                    }
+                entrada.lifecycle.addObserver(observador)
+                onDispose {
+                    entrada.lifecycle.removeObserver(observador)
+                    modelo.inicioVisible = false
+                }
+            }
+            val enUsb = modelo.seccion == Seccion.USB
             InicioPantalla(
                 estado = estado,
                 miniaturas = miniaturas,
-                foco = modelo.foco,
+                seccion = modelo.seccion,
+                foco = if (enUsb) modelo.focoUsb else modelo.foco,
                 otroIdioma = otro,
-                alEnfocar = { modelo.foco = it },
+                alEnfocar = { if (enUsb) modelo.focoUsb = it else modelo.foco = it },
+                alElegirSeccion = { modelo.seccion = it },
                 alCambiarIdioma = { idioma.cambiar(otro) },
                 // Solo si el inicio es la pantalla activa: un Enter de más no abre dos veces.
                 alElegir = { fila, elemento ->
@@ -119,7 +142,7 @@ private fun deLaFila(
     tipo: TipoContenido,
 ): List<Elemento> =
     (estado as? EstadoInicio.Listo)
-        ?.filas
+        ?.let { it.filas + it.usb.filas }
         ?.firstOrNull { it.tipo == fila }
         ?.elementos
         ?.filter { it.tipo == tipo }

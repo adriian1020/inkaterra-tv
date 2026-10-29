@@ -75,7 +75,15 @@ class Biblioteca(
         }
 }
 
-// Lo que muestra la fila de la USB (D-22): fotos y videos, del más nuevo al más viejo; la música
-// de la memoria no se muestra.
-fun ContenidoBiblioteca.paraLaUsb(): List<Elemento> =
-    (videos + fotos).sortedWith(compareByDescending<Elemento> { it.archivo.modificadoMs }.thenBy { it.titulo })
+// Lo que muestra la sección «Tu USB» (D-23): videos, fotos y música de la memoria, cada uno del más
+// nuevo al más viejo.
+data class ContenidoUsb(
+    val videos: List<Elemento>,
+    val fotos: List<Elemento>,
+    val musica: List<Elemento>,
+)
+
+fun ContenidoBiblioteca.paraLaUsb(): ContenidoUsb {
+    val recientes = compareByDescending<Elemento> { it.archivo.modificadoMs }.thenBy { it.titulo }
+    return ContenidoUsb(videos.sortedWith(recientes), fotos.sortedWith(recientes), musica.sortedWith(recientes))
+}
