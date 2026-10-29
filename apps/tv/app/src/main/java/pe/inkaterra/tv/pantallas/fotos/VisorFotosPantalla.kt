@@ -81,10 +81,11 @@ fun VisorFotosPantalla(
         mover(1)
     }
 
-    // Sin esto, el protector de pantalla de Google TV tapa la presentación.
+    // Sin esto, el protector de pantalla de Google TV tapa la presentación. En pausa sí puede
+    // aparecer: una foto quieta no debe quedar en pantalla si el huésped se va.
     val vista = LocalView.current
-    DisposableEffect(vista) {
-        vista.keepScreenOn = true
+    DisposableEffect(vista, pausada) {
+        vista.keepScreenOn = !pausada
         onDispose { vista.keepScreenOn = false }
     }
 
@@ -106,7 +107,9 @@ fun VisorFotosPantalla(
                             Key.Enter, Key.DirectionCenter -> ({ pausada = !pausada })
                             else -> return@onPreviewKeyEvent false
                         }
-                    if (evento.type == KeyEventType.KeyDown) accion()
+                    // Una tecla mantenida cuenta una vez: cada foto que pasa carga otra foto entera
+                    // en el fundido, y repetidas podían agotar la memoria de la TV.
+                    if (evento.type == KeyEventType.KeyDown && evento.nativeKeyEvent.repeatCount == 0) accion()
                     true
                 }.focusable(),
         contentAlignment = Alignment.Center,
