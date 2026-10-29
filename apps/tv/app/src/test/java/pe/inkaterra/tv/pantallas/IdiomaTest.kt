@@ -20,6 +20,7 @@ import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
 import pe.inkaterra.tv.app.Navegacion
 import pe.inkaterra.tv.app.TemaInkaterra
+import pe.inkaterra.tv.dominio.PosicionesVideo
 import pe.inkaterra.tv.sistema.idioma.Idioma
 
 @RunWith(AndroidJUnit4::class)
@@ -33,7 +34,7 @@ class IdiomaTest {
 
     private fun abrir(ajuste: AjusteIdiomaFalso) {
         val miniaturas = miniaturasSinImagen(temporal.root)
-        regla.setContent { TemaInkaterra { Navegacion(bibliotecaDePrueba(), miniaturas, ajuste) } }
+        regla.setContent { TemaInkaterra { Navegacion(bibliotecaDePrueba(), miniaturas, PosicionesVideo(), ajuste) } }
         regla.waitForIdle()
     }
 

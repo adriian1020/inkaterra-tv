@@ -265,7 +265,8 @@ fun ReproductorPantalla(
                 color = ColoresInkaterra.crema,
             )
         }
-        if (barraVisible && !conError) {
+        // También con el error: así se ve qué video no se pudo reproducir.
+        if (barraVisible) {
             BarraVideo(
                 titulo = videos[actual].titulo,
                 posicionMs = posicionMs,

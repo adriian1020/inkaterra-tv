@@ -1,8 +1,8 @@
 // Inicio estilo Netflix (D-20): arriba el área destacada con lo que tiene el foco, abajo las filas
-// de tarjetas. El foco arranca en la primera tarjeta, vuelve a la tarjeta de origen al regresar
-// de lo que se abrió, y Atrás fuera de la primera fila sube a la primera tarjeta; en la primera
-// fila, Atrás no se intercepta y la app se cierra como cualquier app de Google TV. Arriba a la
-// derecha, el botón para cambiar de idioma.
+// de tarjetas. El foco arranca en la primera tarjeta, al regresar de lo que se abrió vuelve a la
+// tarjeta de lo último que se vio (D-21), y Atrás fuera de la primera fila sube a la primera
+// tarjeta; en la primera fila, Atrás no se intercepta y la app se cierra como cualquier app de
+// Google TV. Arriba a la derecha, el botón para cambiar de idioma.
 package pe.inkaterra.tv.pantallas.inicio
 
 import androidx.activity.compose.BackHandler
@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,9 +56,11 @@ private const val DEMORA_DESTACADO_MS = 500L
 fun InicioPantalla(
     estado: EstadoInicio,
     miniaturas: Miniaturas,
+    foco: Foco,
     otroIdioma: Idioma,
+    alEnfocar: (Foco) -> Unit,
     alCambiarIdioma: () -> Unit,
-    alElegir: (Elemento) -> Unit,
+    alElegir: (TipoFila, Elemento) -> Unit,
 ) {
     var enBotonIdioma by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxSize().background(ColoresInkaterra.fondo)) {
@@ -72,7 +73,7 @@ fun InicioPantalla(
                 modifier = Modifier.align(Alignment.Center),
             )
         } else {
-            InicioConFilas(estado.filas, miniaturas, fueraDeLasFilas = enBotonIdioma, alElegir)
+            InicioConFilas(estado.filas, miniaturas, foco, fueraDeLasFilas = enBotonIdioma, alEnfocar, alElegir)
         }
         // Arriba a la derecha, sobre el área destacada; se llega con Arriba desde la primera fila.
         Button(
@@ -93,12 +94,14 @@ fun InicioPantalla(
 private fun InicioConFilas(
     filas: List<Fila>,
     miniaturas: Miniaturas,
+    foco: Foco,
     fueraDeLasFilas: Boolean,
-    alElegir: (Elemento) -> Unit,
+    alEnfocar: (Foco) -> Unit,
+    alElegir: (TipoFila, Elemento) -> Unit,
 ) {
-    // Tarjeta con el foco: se guarda para devolverle el foco al volver de lo que se abrió.
-    var fila by rememberSaveable { mutableIntStateOf(0) }
-    var columna by rememberSaveable { mutableIntStateOf(0) }
+    // La tarjeta con el foco vive en el modelo: al volver de lo que se abrió, el foco va a lo
+    // último que se vio, que puede no ser la tarjeta que se eligió.
+    val (fila, columna) = foco
     val enfocado = filas.getOrNull(fila)?.elementos?.getOrNull(columna) ?: filas.first().elementos.first()
     var destacado by remember { mutableStateOf(enfocado) }
     LaunchedEffect(enfocado) {
@@ -107,17 +110,20 @@ private fun InicioConFilas(
     }
 
     val listaFilas = rememberLazyListState()
-    val estadosFilas = remember(filas.size) { List(filas.size) { LazyListState() } }
+    // El desplazamiento de cada fila se guarda dentro de la fila (sobrevive a lo que se abre) y se
+    // registra aquí, como los FocusRequester, para poder desplazarla al devolver el foco.
+    val estadosFilas = remember { HashMap<Int, LazyListState>() }
     val solicitantes = remember { HashMap<Pair<Int, Int>, FocusRequester>() }
     val alcance = rememberCoroutineScope()
 
-    // Hay que desplazar las listas para que la tarjeta exista antes de pedirle el foco.
+    // Hay que desplazar las listas para que la fila y la tarjeta existan antes de pedirle el foco.
     suspend fun enfocar(
         f: Int,
         c: Int,
     ) {
         listaFilas.scrollToItem(f)
-        estadosFilas[f].scrollToItem(c)
+        withFrameNanos { }
+        estadosFilas[f]?.scrollToItem(c)
         withFrameNanos { }
         solicitantes[f to c]?.requestFocus()
     }
@@ -132,6 +138,11 @@ private fun InicioConFilas(
             contentPadding = PaddingValues(bottom = 24.dp),
         ) {
             itemsIndexed(filas, key = { _, it -> it.tipo }) { f, datos ->
+                val estadoFila = rememberSaveable(saver = LazyListState.Saver) { LazyListState() }
+                DisposableEffect(f, estadoFila) {
+                    estadosFilas[f] = estadoFila
+                    onDispose { estadosFilas.remove(f, estadoFila) }
+                }
                 Column {
                     Text(
                         text = stringResource(titulo(datos.tipo)),
@@ -140,7 +151,7 @@ private fun InicioConFilas(
                         modifier = Modifier.padding(start = 48.dp, top = 8.dp).testTag("fila-${datos.tipo.name}"),
                     )
                     LazyRow(
-                        state = estadosFilas[f],
+                        state = estadoFila,
                         contentPadding = PaddingValues(horizontal = 48.dp, vertical = 12.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
@@ -153,15 +164,12 @@ private fun InicioConFilas(
                             TarjetaContenido(
                                 elemento = elemento,
                                 miniaturas = miniaturas,
-                                alElegir = { alElegir(elemento) },
+                                alElegir = { alElegir(datos.tipo, elemento) },
                                 modifier =
                                     Modifier
                                         .focusRequester(solicitante)
                                         .onFocusChanged {
-                                            if (it.isFocused) {
-                                                fila = f
-                                                columna = c
-                                            }
+                                            if (it.isFocused) alEnfocar(Foco(f, c))
                                         }.testTag("tarjeta-${datos.tipo.name}-$c"),
                             )
                         }
