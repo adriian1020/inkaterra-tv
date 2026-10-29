@@ -686,7 +686,8 @@ Una historia está terminada cuando:
 - [x]  Mirar en la TV el paso de un video H.264 a uno HEVC: se ve bien (la captura por adb salía negra)
 - [x]  Videos de 60 Mbps que miden un poco más (60,6): el límite pasa a 62 Mbps (D-13)
 - [ ]  Mostrar el inicio estilo Netflix (las capturas del informe del sprint 1 o la app en el Xiaomi) a quien lo pidió y confirmarlo (D-20)
-- [ ]  Probar una memoria USB en la TV (D-18), antes del sprint 3
+- [x]  Por qué el Xiaomi no leía la memoria USB: el puerto solo lee con la depuración apagada (D-18)
+- [ ]  Probar la lectura de la memoria USB con la fila «Tu USB» (sprint 3) y en la TCL (D-18)
 - [ ]  Decidir pantalla principal: app normal, equipo administrado o reemplazar el inicio de Google TV (D-14), antes del sprint 5
 - [ ]  Conseguir una TCL para el piloto del sprint 5
 
