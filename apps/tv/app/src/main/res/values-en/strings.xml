@@ -8,4 +8,6 @@
     <string name="tipo_foto">Photo</string>
     <string name="tipo_musica">Music</string>
     <string name="inicio_vacio">No content yet</string>
+    <string name="video_pausado">Paused</string>
+    <string name="video_no_reproduce">This video can’t be played</string>
 </resources>

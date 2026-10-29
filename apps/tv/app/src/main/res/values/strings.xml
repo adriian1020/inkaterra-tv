@@ -9,6 +9,8 @@
     <string name="tipo_foto">Foto</string>
     <string name="tipo_musica">Música</string>
     <string name="inicio_vacio">Todavía no hay contenido</string>
+    <string name="video_pausado">En pausa</string>
+    <string name="video_no_reproduce">No se puede reproducir este video</string>
     <string name="idioma_bienvenida" translatable="false">Bienvenido · Welcome</string>
     <string name="idioma_espanol" translatable="false">Español</string>
     <string name="idioma_ingles" translatable="false">English</string>
