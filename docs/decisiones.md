@@ -74,7 +74,7 @@ se decide durante los sprints siguientes.
   `connectedDebugAndroidTest` de AGP 9.4 termina en error aunque todas las pruebas pasen. El
   script instala los dos APK y corre `am instrument`; falla si la salida no dice `OK (`.
 
-## D-13. Tasa máxima de video: 60 Mbps
+## D-13. Tasa máxima de video: 62 Mbps (60 medidos, más un margen)
 
 - **Qué:** se aceptan videos H.264 o HEVC de hasta 3840 × 2160 y **60 Mbps**. Es el límite de
   `TASA_MAXIMA_BPS` en las reglas de contenido (sprint 1).
@@ -85,6 +85,10 @@ se decide durante los sprints siguientes.
 - **Pendiente:** repetir `Reproduccion4kTest` en la TCL del piloto (sprint 5) y con una pantalla
   4K conectada; hoy el Xiaomi está en una pantalla 1080p, así que se midió la decodificación 4K,
   no la salida.
+- **Cambio (sprint 2, 28 de octubre):** el límite pasa a **62 Mbps** (`TASA_MAXIMA_BPS =
+  62_000_000`). Un video exportado «a 60 Mbps» mide un poco más (`hevc-60m.mp4` da 60,6) y
+  quedaba afuera. Decidido por Adrián; en el Xiaomi, `hevc-60m.mp4` se vio entero dentro de la app
+  con 0 cuadros perdidos. Se sigue recomendando exportar a 40 Mbps o menos.
 
 ## D-14. Pantalla principal: Google TV no la cede a una app normal
 
@@ -218,3 +222,25 @@ se decide durante los sprints siguientes.
   generarlas.
 - **Pendiente:** mostrar una maqueta a quien pidió el estilo Netflix y confirmar que es lo que
   esperaba.
+
+## D-21. Reproducción de video y presentación de fotos
+
+- **Qué** (elegido por Adrián al planificar el sprint 2):
+  - **Retomar donde quedó, solo mientras la app esté abierta.** Si el huésped sale de un video y
+    vuelve a entrar, sigue donde estaba (desde los 5 s y si faltan más de 15 s). Al cerrarse la
+    app se olvida.
+  - **Al terminar un video sigue el siguiente video de la misma fila** (se saltan las fotos en
+    Destacados). Después del último vuelve al inicio, con el foco en la tarjeta del último
+    video que se vio.
+  - **La presentación de fotos arranca sola** desde la foto elegida: 8 s por foto, fundido de
+    1 s, en bucle por las fotos de la fila. Izquierda y Derecha cambian a mano; Enter pausa.
+  - Con el control, en el video: Enter (o la tecla de reproducir) pausa y sigue; Izquierda y
+    Derecha retroceden y adelantan 10 s. La barra con el título y el tiempo se ve 5 s después
+    de cada tecla y siempre que está en pausa.
+- **Por qué:** recordar la posición en la TV dejaría al siguiente huésped los videos a medias del
+  anterior (como «Seguir viendo» en D-20).
+- **Archivos que no se pueden reproducir:** el reproductor muestra «No se puede reproducir este
+  video» 3 s y sigue con el siguiente (o vuelve al inicio); el visor muestra «No se puede abrir
+  esta foto» y, en la presentación, pasa a la siguiente a los 3 s. Además, la biblioteca rechaza
+  los videos que ningún decodificador de la TV puede abrir (por ejemplo H.264 4:4:4), y los
+  rechazados quedan en el registro (`logcat`, etiqueta «Contenido»).

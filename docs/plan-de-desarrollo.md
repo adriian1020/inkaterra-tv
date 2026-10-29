@@ -110,6 +110,7 @@ La app de TV agregaría un dominio más al edge (por ejemplo `tv.inkaterra.pe`) 
 | D-11 | El mismo contenido del hotel en todas las TVs (Fase 1) | Pedido del proyecto. La Fase 2 permite separar por hotel si hace falta |
 | D-12 | Marca tomada de la web: verde `#5A6A40`, Josefin Sans y Cinzel en lugar de Trajan Pro | Trajan Pro es de pago; Cinzel es libre y parecida |
 | D-20 | Inicio estilo Netflix: área destacada arriba y filas con miniaturas (Destacados, Videos, Fotos y Música), sin pantallas de sección | Pedido a Adrián. El detalle, y lo que no se toma de Netflix, en [decisiones.md](decisiones.md) |
+| D-21 | Retomar solo mientras la app está abierta, siguiente video al terminar y presentación de fotos que arranca sola | Elegido por Adrián; recordar posiciones en la TV dejaría rastro al siguiente huésped |
 
 ### Decisiones pendientes
 
@@ -333,7 +334,7 @@ stateDiagram-v2
 
 | Tipo | Formatos | Límites |
 | --- | --- | --- |
-| Video | MP4, MKV o MOV con H.264 o H.265 (HEVC), y WEBM con VP9 (D-19) | Hasta 3840 × 2160 (4K) y 60 Mbps (D-13, medido en el sprint 0) |
+| Video | MP4, MKV o MOV con H.264 o H.265 (HEVC), y WEBM con VP9 (D-19) | Hasta 3840 × 2160 (4K) y 62 Mbps (D-13, medido en el sprint 0) |
 | Foto | JPG, PNG o WebP | Si pasa de 4K, se reduce al mostrarla |
 | Música | MP3, AAC (M4A) o FLAC | — |
 | Promoción | Un video o una foto con su duración en pantalla | Mismas reglas que video y foto |
@@ -443,8 +444,8 @@ El objetivo es no construir sobre supuestos. Todo lo que depende de la TV se pru
 
 **Sprint 2: video y fotos (9 al 13 nov)**
 
-- Reproductor de video con Media3: pausar, adelantar y retroceder con el control, retomar donde quedó y barra de información.
-- Visor de fotos y presentación automática con transiciones.
+- Reproductor de video con Media3: pausar, adelantar y retroceder con el control, retomar donde quedó y barra de información. Retomar solo mientras la app está abierta, y al terminar sigue el siguiente video de la fila (D-21).
+- Visor de fotos y presentación automática con transiciones. Arranca sola, 8 s por foto con fundido (D-21).
 - Archivos dañados o fuera de las reglas: mensaje claro, se saltan y quedan en el registro.
 
 **Se acepta cuando:** se ve un video 4K completo y una presentación de fotos en el Xiaomi sin trabas.
@@ -680,7 +681,10 @@ Una historia está terminada cuando:
 - [x]  Partir el sprint 0 y el sprint 1 en pasos numerados, con sus pruebas
 - [x]  Sprint 0 (28 de octubre): ver el [informe del sprint 0](informes/sprint-0.md) y las decisiones D-13 a D-19
 - [x]  Sprint 1 (28 de octubre): ver el [informe del sprint 1](informes/sprint-1.md) y la decisión D-20
-- [ ]  Subir `sprint-0/integracion` y abrir su PR hacia `main`
+- [x]  Sprint 2 (28 de octubre): ver el [informe del sprint 2](informes/sprint-2.md) y la decisión D-21
+- [x]  Subir los sprints 0 y 1 y unirlos a `main` (PR 1 y 2)
+- [ ]  Mirar en la TV el paso de un video H.264 a uno HEVC (en la captura por adb sale negro)
+- [x]  Videos de 60 Mbps que miden un poco más (60,6): el límite pasa a 62 Mbps (D-13)
 - [ ]  Mostrar el inicio estilo Netflix (las capturas del informe del sprint 1 o la app en el Xiaomi) a quien lo pidió y confirmarlo (D-20)
 - [ ]  Probar una memoria USB en la TV (D-18), antes del sprint 3
 - [ ]  Decidir pantalla principal: app normal, equipo administrado o reemplazar el inicio de Google TV (D-14), antes del sprint 5

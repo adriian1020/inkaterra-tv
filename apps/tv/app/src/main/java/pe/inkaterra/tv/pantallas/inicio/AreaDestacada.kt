@@ -34,7 +34,7 @@ fun AreaDestacada(
     miniaturas: Miniaturas,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier) {
+    Box(modifier.testTag("area-destacada")) {
         Box(Modifier.fillMaxHeight().fillMaxWidth(0.6f).align(Alignment.TopEnd)) {
             Miniatura(elemento, miniaturas, Modifier.fillMaxSize())
             Box(

@@ -50,7 +50,37 @@ flowchart LR
   biblioteca una vez; el foco y Atrás viven en `InicioPantalla`.
 - **Idioma** (`sistema/idioma/`): idioma por app de appcompat; desde Android 13 lo guarda el
   sistema.
-- `AbrirPantalla` es provisional: el sprint 2 la reemplaza por el reproductor y el visor.
+- `AbrirPantalla` es provisional: desde el sprint 2 solo la usa la música, hasta el sprint 3.
 
-Pendiente de los sprints: reproductores (sprint 2), USB del huésped (sprint 3) y promociones
-(sprint 4).
+## Video y fotos (sprint 2)
+
+```mermaid
+flowchart LR
+  inicio[InicioPantalla] -- Enter en un video --> video[ReproductorPantalla]
+  inicio -- Enter en una foto --> fotos[VisorFotosPantalla]
+  inicio -- Enter en una canción --> abrir[AbrirPantalla]
+  video -- Atrás o fin de la fila --> inicio
+  fotos -- Atrás --> inicio
+  video -. filas y foco .-> modelo[InicioModelo]
+  fotos -. filas y foco .-> modelo
+  video --> posiciones[PosicionesVideo]
+  video --> exo[ExoPlayer + SurfaceView]
+  fotos --> coil[Coil]
+```
+
+- **Rutas:** `video/{fila}/{indice}` y `fotos/{fila}/{indice}`. Cada pantalla recibe los
+  videos o las fotos de su fila (en Destacados, solo los de su tipo), que lee del `InicioModelo`
+  de la entrada `inicio`. Al salir le dice al modelo qué fue lo último que se vio, y el
+  inicio devuelve el foco a esa tarjeta (D-21).
+- **Reproductor** (`pantallas/video/`): un ExoPlayer por pantalla sobre un `SurfaceView`, la
+  única superficie que mantiene el 4K sin perder cuadros. Las reglas (retomar, saltos de 10 s,
+  siguiente video) son Kotlin puro en `dominio/Reproduccion.kt` y `ListaVideos.kt`. Cada video
+  deja en el registro (`Reproductor`) cuántos cuadros mostró y cuántos perdió.
+- **Posiciones para retomar:** `PosicionesVideo`, una sola por proceso en el `Contenedor`; nunca
+  se guardan en disco.
+- **Visor** (`pantallas/fotos/`): Coil reduce cada foto al tamaño de la pantalla; la
+  presentación es un temporizador de 8 s que se reinicia con cada cambio.
+- **Reglas de contenido:** desde el sprint 2, un video también se rechaza si la TV no tiene un
+  decodificador para su perfil (`MediaCodecList`).
+
+Pendiente de los sprints: música y USB del huésped (sprint 3) y promociones (sprint 4).
