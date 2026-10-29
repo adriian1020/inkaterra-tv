@@ -74,7 +74,7 @@ se decide durante los sprints siguientes.
   `connectedDebugAndroidTest` de AGP 9.4 termina en error aunque todas las pruebas pasen. El
   script instala los dos APK y corre `am instrument`; falla si la salida no dice `OK (`.
 
-## D-13. Tasa máxima de video: 60 Mbps
+## D-13. Tasa máxima de video: 62 Mbps (60 medidos, más un margen)
 
 - **Qué:** se aceptan videos H.264 o HEVC de hasta 3840 × 2160 y **60 Mbps**. Es el límite de
   `TASA_MAXIMA_BPS` en las reglas de contenido (sprint 1).
@@ -85,6 +85,10 @@ se decide durante los sprints siguientes.
 - **Pendiente:** repetir `Reproduccion4kTest` en la TCL del piloto (sprint 5) y con una pantalla
   4K conectada; hoy el Xiaomi está en una pantalla 1080p, así que se midió la decodificación 4K,
   no la salida.
+- **Cambio (sprint 2, 28 de octubre):** el límite pasa a **62 Mbps** (`TASA_MAXIMA_BPS =
+  62_000_000`). Un video exportado «a 60 Mbps» mide un poco más (`hevc-60m.mp4` da 60,6) y
+  quedaba afuera. Decidido por Adrián; en el Xiaomi, `hevc-60m.mp4` se vio entero dentro de la app
+  con 0 cuadros perdidos. Se sigue recomendando exportar a 40 Mbps o menos.
 
 ## D-14. Pantalla principal: Google TV no la cede a una app normal
 
