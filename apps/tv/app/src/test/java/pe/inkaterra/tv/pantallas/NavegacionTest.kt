@@ -130,6 +130,25 @@ class NavegacionTest {
     }
 
     @Test
+    fun alElegirUnaCancionSeAbreElReproductor() {
+        abrir()
+        tecla(Key.DirectionDown)
+        tecla(Key.DirectionDown)
+        tecla(Key.Enter)
+        regla.onNodeWithTag("video-titulo").assertTextEquals("Selva")
+    }
+
+    @Test
+    fun atrasEnLaMusicaVuelveASuTarjeta() {
+        abrir()
+        tecla(Key.DirectionDown)
+        tecla(Key.DirectionDown)
+        tecla(Key.Enter)
+        atras()
+        foco("tarjeta-MUSICA-0")
+    }
+
+    @Test
     fun atrasEnLaPrimeraFilaSaleDeLaApp() {
         abrir()
         atras()
