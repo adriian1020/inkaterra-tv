@@ -4,8 +4,7 @@
 (sale de `main`)
 **Periodo:** 28 de octubre de 2026 (pasos 2.1 a 2.6) · **Responsable:** Adrián
 **Equipo de pruebas:** Xiaomi TV Box S (Google TV, Android 14), por la red en `192.168.31.242`
-**Estado:** sprint 2 completo. Falta la revisión final de la rama, subirla y abrir su PR hacia
-`main`.
+**Estado:** sprint 2 completo y revisado. Falta subir la rama y abrir su PR hacia `main`.
 
 ---
 
@@ -95,12 +94,12 @@ derecha, el foco volvió a «Reserva Amazónica 01», la última foto que se vio
 |---|---|
 | Formato (`ktlintCheck`) | ✅ Sin problemas |
 | Análisis (`lintDebug`, avisos como errores) | ✅ Sin problemas |
-| Pruebas en la PC (`testDebugUnitTest`) | ✅ 74 de 74 (25 nuevas) |
+| Pruebas en la PC (`testDebugUnitTest`) | ✅ 78 de 78 (29 nuevas) |
 | APK (`assembleDebug`) | ✅ |
 | Pruebas en el Xiaomi (`tool/tv.sh probar`) | ✅ 12 de 12 (`VolumenesUsbTest` excluida, sin USB) |
 | Video 4K entero en la app | ✅ HEVC 4K a 40 Mbps: 750 cuadros mostrados, 0 perdidos |
 | CI en GitHub | ⏳ Al subir la rama |
-| Revisión final de la rama (revisor aparte) | ⏳ Pendiente |
+| Revisión final de la rama (revisor aparte) | ✅ 0 críticos · 4 importantes corregidos · 10 menores anotados |
 
 Forma de trabajo en cada paso: rama propia → prueba primero → código → chequeos del CI → prueba
 en la TV → commit → unión a `sprint-2/integracion`.
@@ -126,6 +125,10 @@ en la TV → commit → unión a `sprint-2/integracion`.
 | `fotoDanadaMuestraMensajeYSigue` fallaba a veces con la PC cargada | Con el reloj automático de la prueba, los 8 s de la foto pasaban antes del error de Coil; la prueba avanza de a un cuadro mientras espera |
 | En la PC, Enter con el reloj manual no llegaba en 100 ms | La prueba de la pausa aprieta Enter con el reloj automático y después avanza 9 s |
 | La prueba de las filas pasaba sin el arreglo (la tarjeta 4 quedaba a la vista igual) | Se recorre hasta la sexta foto, que solo queda a la vista si la fila conservó su posición |
+| Revisión: dos videos que fallaban enseguida uno tras otro podían dejar el mensaje fijo | El error guarda el índice del video que falló, así cada error vuelve a contar los 3 s |
+| Revisión: en pausa, la pantalla quedaba encendida y el protector nunca aparecía | La pantalla queda encendida solo mientras el video o la presentación avanzan |
+| Revisión: mantener una flecha en el visor pasaba muchas fotos y cargaba una foto entera por cada una | Una tecla mantenida cuenta una vez (también Enter en el video) |
+| Revisión: ninguna prueba recorría videos que fallan | `ReproductorPantallaTest` recorre tres videos rotos hasta volver |
 | La prueba del plan pausaba a los 4 s, antes del mínimo de 5 s para retomar | Pausa a los 7 s |
 | En las pruebas en la TV, `Thread.sleep` no mueve el reloj de Compose | La prueba avanza el reloj de la prueba para que pasen los 8 s de la foto y para leer el tiempo |
 | `hevc-60m.mp4` mide 60,6 Mbps y la regla de 60 Mbps lo rechaza | La medición se hizo con `hevc-40m.mp4`; ver el pendiente de abajo |
@@ -141,6 +144,13 @@ en la TV → commit → unión a `sprint-2/integracion`.
 - **Videos «de 60 Mbps» que miden un poco más:** un archivo codificado a 60 Mbps puede medir
   60,6 y quedar afuera (D-13). Si el hotel los va a exportar así, conviene un margen (por
   ejemplo, 62 Mbps) o pedir que se exporten a 50.
+- **Menores de la revisión del sprint 2, para más adelante:** saltar en un archivo sin índice lo
+  reinicia; una tecla justo al terminar un video puede saltarse el siguiente; si el panel lateral
+  de Google TV está abierto cuando termina el último video, no vuelve solo al inicio; si la
+  actividad se recrea, vuelve al primer video elegido; la fila enfocada se desplaza al volver;
+  «En pausa» no aparece si otra app toma el audio; un video que falla a la mitad guarda esa
+  posición; la miniatura muestra un cuadro de la imagen anterior; y si un archivo llega sin
+  pista de video que se pueda elegir, se oye el audio sobre negro.
 - **Mostrar el inicio a quien pidió el estilo Netflix** y confirmarlo (D-20).
 - **Contenido real:** las capturas usan muestras generadas; faltan fotos y videos de Inkaterra.
 - Los de antes: memoria USB (D-18), pantalla principal (D-14) y la TCL del piloto.

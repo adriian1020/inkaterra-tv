@@ -105,7 +105,10 @@ fun ReproductorPantalla(
         }
     var actual by remember { mutableIntStateOf(inicial) }
     var pausado by remember { mutableStateOf(false) }
-    var conError by remember { mutableStateOf(false) }
+    // El índice del video que falló. Con un sí o no, dos videos que fallaban enseguida uno tras otro
+    // dejaban la clave del efecto en «sí» y el mensaje quedaba fijo; con el índice, cada uno cambia.
+    var errorEn by remember { mutableStateOf<Int?>(null) }
+    val conError = errorEn == actual
     // Cada tecla suma uno y vuelve a mostrar la barra por 5 s.
     var toques by remember { mutableIntStateOf(0) }
     var barraVisible by remember { mutableStateOf(true) }
@@ -149,7 +152,7 @@ fun ReproductorPantalla(
 
     LaunchedEffect(actual) {
         val ruta = videos[actual].archivo.ruta
-        conError = false
+        errorEn = null
         pausado = false
         player.setMediaItem(MediaItem.fromUri(Uri.fromFile(File(ruta))), posiciones.posicion(ruta))
         player.prepare()
@@ -167,7 +170,7 @@ fun ReproductorPantalla(
 
                 override fun onPlayerError(error: PlaybackException) {
                     Log.w(ETIQUETA, "${videos[actual].archivo.nombre}: ${error.errorCodeName}", error)
-                    conError = true
+                    errorEn = actual
                 }
             }
         player.addListener(oyente)
@@ -177,8 +180,8 @@ fun ReproductorPantalla(
         }
     }
 
-    LaunchedEffect(conError) {
-        if (conError) {
+    LaunchedEffect(errorEn) {
+        if (errorEn != null) {
             delay(ERROR_MS)
             pasarAlSiguiente()
         }
@@ -214,10 +217,11 @@ fun ReproductorPantalla(
         onDispose { ciclo.removeObserver(observador) }
     }
 
-    // Sin esto, el protector de pantalla de Google TV aparece en medio del video.
+    // Sin esto, el protector de pantalla de Google TV aparece en medio del video. En pausa sí puede
+    // aparecer: un cuadro quieto no debe quedar en pantalla si el huésped se va.
     val vista = LocalView.current
-    DisposableEffect(vista) {
-        vista.keepScreenOn = true
+    DisposableEffect(vista, pausado) {
+        vista.keepScreenOn = !pausado
         onDispose { vista.keepScreenOn = false }
     }
 
@@ -238,7 +242,9 @@ fun ReproductorPantalla(
                 .focusRequester(foco)
                 .onPreviewKeyEvent { evento ->
                     val accion = teclas[evento.key] ?: return@onPreviewKeyEvent false
-                    if (evento.type == KeyEventType.KeyDown) {
+                    // Enter mantenido no alterna una y otra vez; las flechas mantenidas sí saltan.
+                    val repetida = evento.nativeKeyEvent.repeatCount > 0
+                    if (evento.type == KeyEventType.KeyDown && !(repetida && accion == AccionVideo.ALTERNAR)) {
                         when (accion) {
                             AccionVideo.ALTERNAR -> {
                                 if (player.playWhenReady) player.pause() else player.play()

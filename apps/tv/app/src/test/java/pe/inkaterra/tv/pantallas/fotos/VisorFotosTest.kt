@@ -4,8 +4,10 @@
 package pe.inkaterra.tv.pantallas.fotos
 
 import android.graphics.Bitmap
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -16,6 +18,8 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -54,12 +58,16 @@ class VisorFotosTest {
     }
 
     private var salida: Elemento? = null
+    private lateinit var vistaDeCompose: View
 
     private fun abrir(
         lista: List<Elemento>,
         inicial: Int = 0,
     ) {
-        regla.setContent { TemaInkaterra { VisorFotosPantalla(lista, inicial) { salida = it } } }
+        regla.setContent {
+            vistaDeCompose = LocalView.current
+            TemaInkaterra { VisorFotosPantalla(lista, inicial) { salida = it } }
+        }
         regla.waitForIdle()
     }
 
@@ -137,5 +145,27 @@ class VisorFotosTest {
         regla.runOnUiThread { regla.activity.onBackPressedDispatcher.onBackPressed() }
         regla.waitForIdle()
         assertEquals(lista[1], salida)
+    }
+
+    // Mantener Derecha no recorre varias fotos: cada una que pasa carga una foto entera en el
+    // fundido, y en la TV podía agotar la memoria.
+    @Test
+    fun mantenerDerechaPasaUnaSolaFoto() {
+        abrir(fotos(5))
+        regla.onRoot().performKeyInput {
+            keyDown(Key.DirectionRight)
+            advanceEventTime(1_500)
+            keyUp(Key.DirectionRight)
+        }
+        regla.waitForIdle()
+        titulo("Reserva Amazónica 02")
+    }
+
+    @Test
+    fun enPausaLaPantallaPuedeApagarse() {
+        abrir(fotos(2))
+        assertTrue(vistaDeCompose.keepScreenOn)
+        tecla(Key.Enter)
+        assertFalse(vistaDeCompose.keepScreenOn)
     }
 }
