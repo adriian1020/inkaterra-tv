@@ -113,10 +113,18 @@ class VisorFotosTest {
 
     @Test
     fun fotoDanadaMuestraMensajeYSigue() {
-        abrir(listOf(foto(archivo("Dañada.jpg")), fotoReal("Canopy.png")))
-        regla.waitUntil(5_000) { regla.onAllNodesWithTag("foto-error").fetchSemanticsNodes().isNotEmpty() }
-        regla.onNodeWithText("No se puede abrir esta foto").assertExists()
+        // Coil abre en hilos reales y, con el reloj automático, los 8 s de la foto podrían pasar
+        // antes de que llegue el error. Se avanza de a un cuadro mientras se espera en tiempo real.
         regla.mainClock.autoAdvance = false
+        abrir(listOf(foto(archivo("Dañada.jpg")), fotoReal("Canopy.png")))
+        val conError = { regla.onAllNodesWithTag("foto-error").fetchSemanticsNodes().isNotEmpty() }
+        repeat(300) {
+            if (!conError()) {
+                regla.mainClock.advanceTimeByFrame()
+                Thread.sleep(20)
+            }
+        }
+        regla.onNodeWithText("No se puede abrir esta foto").assertExists()
         regla.mainClock.advanceTimeBy(3_100)
         titulo("Canopy")
     }
