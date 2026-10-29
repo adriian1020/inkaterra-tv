@@ -154,7 +154,7 @@ se decide durante los sprints siguientes.
 - **Alcance de la medición:** la app al frente se midió 3 minutos (el plan pedía 5); las
   promociones de horas se comprueban en el piloto del sprint 5.
 
-## D-18. Memorias USB: código listo, prueba en la TV pendiente
+## D-18. Memorias USB: el Xiaomi las lee solo con la depuración apagada
 
 - **Qué hay:** `VolumenesUsb` lista las memorias montadas (`StorageManager`, solo las
   extraíbles) y avisa cuando se conectan o se retiran. Lee la carpeta de la memoria directo,
@@ -164,10 +164,23 @@ se decide durante los sprints siguientes.
   que la PC lee bien) no apareció ni como dispositivo en el puerto USB de la caja, conectada
   directo; Android solo veía el adaptador wifi interno. No es un problema de formato: con un
   formato que no lee, Android igual mostraría el disco.
-- **Pendiente para el sprint 3 (USB del huésped):** repetir con otra memoria, con el Xiaomi en
-  su propio cargador o con un hub USB con alimentación, y luego en la TCL. Hasta entonces no
-  se sabe qué formatos lee (FAT32, exFAT, NTFS) ni si hace falta pedir permisos de fotos y
-  videos.
+- **La causa (29 de octubre):** el puerto USB del Xiaomi hace dos cosas, pero no a la vez:
+  conectar la caja a una PC o leer lo que se le enchufa. Con la **depuración por USB o la
+  inalámbrica encendida**, queda del lado de la PC y no ve nada: una memoria, un disco externo
+  y un mouse no aparecieron en el bus, ni con un extensor ni conectados directo. Cambiar
+  «solo carga» por «transferencia de archivos» no cambia nada (eso es para cuando la caja se
+  conecta a una PC). Con las **dos depuraciones apagadas**, Adrián vio que la TV sí detecta la
+  memoria; al volver a encender la inalámbrica, dejó de verla.
+- **Qué significa:**
+  - **En el hotel:** las TV funcionan sin depuración, así que el puerto debería leer las
+    memorias de los huéspedes. Si más adelante se administran las TV por adb (fase 2), el
+    puerto dejaría de leer mientras la depuración esté encendida.
+  - **Para probar:** en el Xiaomi, `VolumenesUsbTest` no se puede correr, porque necesita adb y
+    adb necesita la depuración. La lectura se prueba a mano con la fila «Tu USB» del sprint 3
+    (instalar, apagar la depuración, conectar la memoria) y en la TCL, que puede tener otro
+    puerto o el mismo comportamiento.
+- **Pendiente para el sprint 3 (USB del huésped):** saber qué formatos lee (FAT32, exFAT, NTFS)
+  y si hace falta pedir permisos de fotos y videos.
 - **También pendiente:** si la lectura directa de la carpeta falla (Android 11 en adelante
   limita el acceso), leer por `MediaStore` y anotar el permiso que hace falta
   (`READ_MEDIA_IMAGES` y `READ_MEDIA_VIDEO`); y retirar la memoria mientras la app la lee, para
