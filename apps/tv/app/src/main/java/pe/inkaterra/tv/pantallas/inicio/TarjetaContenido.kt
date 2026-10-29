@@ -23,13 +23,13 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import pe.inkaterra.tv.app.ColoresInkaterra
 import pe.inkaterra.tv.datos.biblioteca.Elemento
-import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.datos.miniaturas.FuenteMiniaturas
 import pe.inkaterra.tv.pantallas.comun.Miniatura
 
 @Composable
 fun TarjetaContenido(
     elemento: Elemento,
-    miniaturas: Miniaturas,
+    miniaturas: FuenteMiniaturas,
     alElegir: () -> Unit,
     modifier: Modifier = Modifier,
 ) {

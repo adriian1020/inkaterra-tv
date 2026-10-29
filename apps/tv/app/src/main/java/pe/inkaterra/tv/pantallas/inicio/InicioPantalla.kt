@@ -2,7 +2,8 @@
 // de tarjetas. El foco arranca en la primera tarjeta, al regresar de lo que se abrió vuelve a la
 // tarjeta de lo último que se vio (D-21), y Atrás fuera de la primera fila sube a la primera
 // tarjeta; en la primera fila, Atrás no se intercepta y la app se cierra como cualquier app de
-// Google TV. Arriba a la derecha, el botón para cambiar de idioma.
+// Google TV. Arriba a la derecha, el botón para cambiar de idioma. La fila de la USB del huésped
+// aparece y se va con la memoria (D-22); si no se puede mostrar, lleva un aviso en vez de tarjetas.
 package pe.inkaterra.tv.pantallas.inicio
 
 import androidx.activity.compose.BackHandler
@@ -35,6 +36,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Button
@@ -45,7 +47,7 @@ import kotlinx.coroutines.launch
 import pe.inkaterra.tv.R
 import pe.inkaterra.tv.app.ColoresInkaterra
 import pe.inkaterra.tv.datos.biblioteca.Elemento
-import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.datos.miniaturas.FuenteMiniaturas
 import pe.inkaterra.tv.sistema.idioma.Idioma
 
 // El área destacada cambia cuando el foco lleva este tiempo quieto, para que no parpadee al
@@ -55,7 +57,7 @@ private const val DEMORA_DESTACADO_MS = 500L
 @Composable
 fun InicioPantalla(
     estado: EstadoInicio,
-    miniaturas: Miniaturas,
+    miniaturas: FuenteMiniaturas,
     foco: Foco,
     otroIdioma: Idioma,
     alEnfocar: (Foco) -> Unit,
@@ -93,7 +95,7 @@ fun InicioPantalla(
 @Composable
 private fun InicioConFilas(
     filas: List<Fila>,
-    miniaturas: Miniaturas,
+    miniaturas: FuenteMiniaturas,
     foco: Foco,
     fueraDeLasFilas: Boolean,
     alEnfocar: (Foco) -> Unit,
@@ -102,7 +104,9 @@ private fun InicioConFilas(
     // La tarjeta con el foco vive en el modelo: al volver de lo que se abrió, el foco va a lo
     // último que se vio, que puede no ser la tarjeta que se eligió.
     val (fila, columna) = foco
-    val enfocado = filas.getOrNull(fila)?.elementos?.getOrNull(columna) ?: filas.first().elementos.first()
+    val enfocado =
+        filas.getOrNull(fila)?.elementos?.getOrNull(columna)
+            ?: filas.first { it.elementos.isNotEmpty() }.elementos.first()
     var destacado by remember { mutableStateOf(enfocado) }
     LaunchedEffect(enfocado) {
         delay(DEMORA_DESTACADO_MS)
@@ -116,18 +120,24 @@ private fun InicioConFilas(
     val solicitantes = remember { HashMap<Pair<Int, Int>, FocusRequester>() }
     val alcance = rememberCoroutineScope()
 
-    // Hay que desplazar las listas para que la fila y la tarjeta existan antes de pedirle el foco.
+    // Hay que desplazar las listas para que la fila y la tarjeta existan antes de pedirle el foco. Una
+    // fila con aviso (la de la USB) no tiene tarjetas: el foco va a la primera fila que sí tiene.
     suspend fun enfocar(
-        f: Int,
-        c: Int,
+        fila: Int,
+        columna: Int,
     ) {
+        val conTarjetas = filas.getOrNull(fila)?.elementos?.isNotEmpty() == true
+        val f = if (conTarjetas) fila else filas.indexOfFirst { it.elementos.isNotEmpty() }
+        val c = if (conTarjetas) columna else 0
         listaFilas.scrollToItem(f)
         withFrameNanos { }
         estadosFilas[f]?.scrollToItem(c)
         withFrameNanos { }
         solicitantes[f to c]?.requestFocus()
     }
-    LaunchedEffect(Unit) { enfocar(fila.coerceIn(filas.indices), columna) }
+    // También cuando una fila aparece o se va (la de la USB): el modelo ya movió el foco a su tarjeta.
+    val tipos = filas.map { it.tipo }
+    LaunchedEffect(tipos) { enfocar(fila.coerceIn(filas.indices), columna) }
     BackHandler(enabled = fila > 0 || fueraDeLasFilas) { alcance.launch { enfocar(0, 0) } }
 
     Column(Modifier.fillMaxSize()) {
@@ -150,6 +160,29 @@ private fun InicioConFilas(
                         color = ColoresInkaterra.crema,
                         modifier = Modifier.padding(start = 48.dp, top = 8.dp).testTag("fila-${datos.tipo.name}"),
                     )
+                    // Lo de la USB que la TV no puede mostrar (CU-17 3b).
+                    if (datos.rechazados > 0) {
+                        Text(
+                            text = pluralStringResource(R.plurals.usb_rechazados, datos.rechazados, datos.rechazados),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = ColoresInkaterra.crema.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(start = 48.dp, top = 4.dp),
+                        )
+                    }
+                    // Una fila con aviso no tiene tarjetas ni recibe el foco.
+                    val aviso = datos.aviso
+                    if (aviso != null) {
+                        Text(
+                            text = stringResource(textoAviso(aviso)),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = ColoresInkaterra.crema,
+                            modifier =
+                                Modifier
+                                    .padding(horizontal = 48.dp, vertical = 24.dp)
+                                    .testTag("aviso-${datos.tipo.name}"),
+                        )
+                        return@Column
+                    }
                     LazyRow(
                         state = estadoFila,
                         contentPadding = PaddingValues(horizontal = 48.dp, vertical = 12.dp),
@@ -183,7 +216,15 @@ private fun InicioConFilas(
 private fun titulo(tipo: TipoFila) =
     when (tipo) {
         TipoFila.DESTACADOS -> R.string.fila_destacados
+        TipoFila.USB -> R.string.fila_usb
         TipoFila.VIDEOS -> R.string.fila_videos
         TipoFila.FOTOS -> R.string.fila_fotos
         TipoFila.MUSICA -> R.string.fila_musica
+    }
+
+private fun textoAviso(aviso: AvisoFila) =
+    when (aviso) {
+        AvisoFila.LEYENDO -> R.string.usb_leyendo
+        AvisoFila.VACIA -> R.string.usb_vacia
+        AvisoFila.NO_SE_LEE -> R.string.usb_no_se_lee
     }

@@ -49,4 +49,13 @@ class ReproduccionTest {
         assertEquals("1:02:05", textoTiempo(3_725_000))
         assertEquals("0:00", textoTiempo(0))
     }
+
+    @Test
+    fun olvidarDentroDeBorraSoloEsaCarpeta() {
+        val posiciones = PosicionesVideo()
+        val rutas = listOf("/storage/AB12-34CD/v.mp4", "/storage/AB12-34CDE/w.mp4", "/contenido/x.mp4")
+        rutas.forEach { posiciones.guardar(it, 60_000, 200_000) }
+        posiciones.olvidarDentroDe("/storage/AB12-34CD")
+        assertEquals(listOf(0L, 60_000L, 60_000L), rutas.map { posiciones.posicion(it) })
+    }
 }

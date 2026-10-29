@@ -79,6 +79,7 @@ class UsbDelHuesped(
 
     // Revisa lo que ya está conectado y escucha los cambios hasta que se cierre el resultado.
     fun empezar(alcance: CoroutineScope): AutoCloseable {
+        Log.i(ETIQUETA, "Escuchando las memorias USB; permiso=${permiso()}")
         revisar(alcance, volumenes.actuales())
         val escucha = volumenes.observar { revisar(alcance, it) }
         return AutoCloseable {

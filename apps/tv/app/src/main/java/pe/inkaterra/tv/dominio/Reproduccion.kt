@@ -28,6 +28,13 @@ class PosicionesVideo {
     }
 
     fun posicion(ruta: String): Long = posiciones[ruta] ?: 0
+
+    // Al retirar la USB del huésped se olvida dónde iban sus videos (D-10). Con la barra al final, para
+    // no borrar los de otra memoria cuyo nombre empieza igual.
+    fun olvidarDentroDe(carpeta: String) {
+        val prefijo = carpeta.trimEnd('/') + "/"
+        posiciones.keys.removeIf { it.startsWith(prefijo) }
+    }
 }
 
 enum class AccionVideo { ALTERNAR, ADELANTAR, RETROCEDER }

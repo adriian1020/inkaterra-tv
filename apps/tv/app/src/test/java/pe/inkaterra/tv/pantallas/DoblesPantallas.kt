@@ -1,5 +1,5 @@
 // Dobles para las pruebas de pantallas: una biblioteca con contenido inventado, miniaturas que no
-// generan imagen (las tarjetas quedan con su recuadro verde) y un ajuste de idioma en memoria.
+// generan imagen (las tarjetas quedan con su recuadro verde) y un ajuste de idioma en memoria y una USB que se conecta a mano.
 package pe.inkaterra.tv.pantallas
 
 import android.graphics.Bitmap
@@ -12,8 +12,10 @@ import pe.inkaterra.tv.datos.biblioteca.LectorFalso
 import pe.inkaterra.tv.datos.biblioteca.archivo
 import pe.inkaterra.tv.datos.miniaturas.GeneradorMiniatura
 import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.datos.usb.UsbDelHuesped
 import pe.inkaterra.tv.sistema.idioma.AjusteIdioma
 import pe.inkaterra.tv.sistema.idioma.Idioma
+import pe.inkaterra.tv.sistema.usb.VolumenesFalsos
 import java.io.File
 
 val contenidoDePrueba =
@@ -36,6 +38,11 @@ fun miniaturasSinImagen(carpeta: File) =
         carpeta,
         Dispatchers.Unconfined,
     )
+
+// La USB del huésped sobre volúmenes falsos, con permiso y leída en el mismo hilo. Sin volúmenes,
+// es una TV sin memoria conectada.
+fun usbDePrueba(volumenes: VolumenesFalsos = VolumenesFalsos()) =
+    UsbDelHuesped(volumenes, LectorFalso(emptyMap()), { true }, {}, true, Dispatchers.Unconfined)
 
 class AjusteIdiomaFalso(
     private var idioma: Idioma?,

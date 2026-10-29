@@ -30,8 +30,11 @@ import pe.inkaterra.tv.datos.biblioteca.Elemento
 import pe.inkaterra.tv.datos.biblioteca.archivo
 import pe.inkaterra.tv.datos.miniaturas.GeneradorMiniatura
 import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.datos.usb.UsbDelHuesped
 import pe.inkaterra.tv.dominio.PosicionesVideo
 import pe.inkaterra.tv.sistema.idioma.Idioma
+import pe.inkaterra.tv.sistema.usb.VolumenesFalsos
+import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -47,10 +50,11 @@ class NavegacionTest {
     private fun abrir(
         archivos: List<ArchivoLocal> = contenidoDePrueba,
         miniaturas: Miniaturas = miniaturasSinImagen(temporal.root),
+        usb: UsbDelHuesped = usbDePrueba(),
     ) {
         val biblioteca = bibliotecaDePrueba(archivos)
         val idioma = AjusteIdiomaFalso(Idioma.ESPANOL)
-        regla.setContent { TemaInkaterra { Navegacion(biblioteca, miniaturas, PosicionesVideo(), idioma) } }
+        regla.setContent { TemaInkaterra { Navegacion(biblioteca, miniaturas, PosicionesVideo(), idioma, usb) } }
         regla.waitForIdle()
     }
 
@@ -233,5 +237,39 @@ class NavegacionTest {
         } finally {
             soltar.countDown()
         }
+    }
+
+    // Una memoria con una foto, conectada con el inicio abierto. El aviso de Android llega en el
+    // hilo principal.
+    private fun conectarUsb(volumenes: VolumenesFalsos) {
+        val raiz = temporal.newFolder("usb")
+        File(raiz, "DCIM/foto.jpg").apply { parentFile?.mkdirs() }.writeText("x")
+        regla.runOnUiThread { volumenes.conectar(raiz) }
+        regla.waitForIdle()
+    }
+
+    @Test
+    fun alConectarLaUsbApareceSuFila() {
+        val volumenes = VolumenesFalsos()
+        abrir(usb = usbDePrueba(volumenes))
+        conectarUsb(volumenes)
+        regla.onNodeWithTag("fila-USB").assertExists()
+        regla.onNodeWithTag("tarjeta-USB-0").assertExists()
+    }
+
+    @Test
+    fun alRetirarLaUsbElVisorVuelveAlInicio() {
+        val volumenes = VolumenesFalsos()
+        abrir(usb = usbDePrueba(volumenes))
+        conectarUsb(volumenes)
+        tecla(Key.DirectionDown)
+        foco("tarjeta-USB-0")
+        tecla(Key.Enter)
+        regla.onNodeWithTag("foto-titulo").assertExists()
+        regla.runOnUiThread { volumenes.retirar() }
+        regla.waitForIdle()
+        regla.onNodeWithTag("foto-titulo").assertDoesNotExist()
+        regla.onNodeWithTag("fila-USB").assertDoesNotExist()
+        foco("tarjeta-DESTACADOS-0")
     }
 }
