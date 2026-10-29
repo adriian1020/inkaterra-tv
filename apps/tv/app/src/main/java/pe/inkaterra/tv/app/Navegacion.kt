@@ -91,8 +91,12 @@ fun Navegacion(
             }
         }
         composable("fotos/{fila}/{indice}") { entrada ->
+            // La música de fondo son las canciones de la fila Música (D-22), también para la USB.
+            val inicio = remember(entrada) { navegador.getBackStackEntry("inicio") }
+            val estado by modeloDelInicio(inicio).estado.collectAsState()
+            val musica = remember(estado) { deLaFila(estado, TipoFila.MUSICA, TipoContenido.MUSICA) }
             DeLaFila(navegador, entrada, TipoContenido.FOTO, ::modeloDelInicio) { fotos, indice, alSalir ->
-                VisorFotosPantalla(fotos, indice, alSalir)
+                VisorFotosPantalla(fotos, indice, musica, alSalir)
             }
         }
         composable("musica/{fila}/{indice}") { entrada ->

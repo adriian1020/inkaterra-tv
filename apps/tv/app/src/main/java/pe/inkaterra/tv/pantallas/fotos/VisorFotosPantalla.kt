@@ -1,7 +1,8 @@
 // El visor de fotos (D-21): arranca una presentación en la foto elegida que pasa sola cada 8 s con
 // un fundido de 1 s y da la vuelta por las fotos de la fila. Izquierda y Derecha cambian a mano,
 // Enter pausa y Atrás vuelve al inicio. Una foto que no abre muestra su mensaje y, en la
-// presentación, sigue a los 3 s. Coil reduce cada foto al tamaño de la pantalla.
+// presentación, sigue a los 3 s. Coil reduce cada foto al tamaño de la pantalla. De fondo suenan
+// las canciones de la fila Música (D-22); Enter pausa también la música.
 package pe.inkaterra.tv.pantallas.fotos
 
 import androidx.activity.compose.BackHandler
@@ -60,6 +61,7 @@ private const val FUNDIDO_MS = 1_000
 fun VisorFotosPantalla(
     fotos: List<Elemento>,
     inicial: Int,
+    musica: List<Elemento>,
     alSalir: (Elemento) -> Unit,
 ) {
     val contexto = LocalContext.current
@@ -88,6 +90,8 @@ fun VisorFotosPantalla(
         vista.keepScreenOn = !pausada
         onDispose { vista.keepScreenOn = false }
     }
+
+    MusicaDeFondo(musica, sonando = !pausada)
 
     BackHandler { alSalir(fotos[actual]) }
 
