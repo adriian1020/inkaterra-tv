@@ -58,6 +58,9 @@ generar() {
 [ -d "$muestras" ] || generar
 
 adb connect "$TV" >/dev/null 2>&1 || true
+# La carpeta de la app la tiene que crear la app (al abrirse): una creada por adb antes no la puede
+# leer, y la app dice que no hay contenido.
+adb -s "$TV" shell am start -W -n pe.inkaterra.tv/.app.MainActivity >/dev/null 2>&1 || true
 for carpeta in videos fotos musica promociones; do
   [ -d "$muestras/$carpeta" ] || continue
   # Si adb push crea la subcarpeta dentro de Android/data, a veces falla con «secure_mkdirs
