@@ -19,3 +19,19 @@ Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
 - La primera vez la app pregunta el idioma (español o inglés) y lo recuerda; se cambia desde el
   inicio.
 - Colores y letras de Inkaterra: verde oscuro, Josefin Sans y Cinzel.
+- Los videos se ven a pantalla completa en 4K: Enter pausa, Izquierda y Derecha saltan 10 s, y
+  una barra muestra el título y el tiempo.
+- Un video retoma donde quedó mientras la app esté abierta, y al terminar sigue el próximo
+  video de la fila.
+- Las fotos se ven en una presentación que pasa sola cada 8 s con un fundido; Enter la pausa.
+- Al volver al inicio, el foco queda en lo último que se vio.
+
+### Cambiado
+
+- Ya no aparecen los videos que la TV no puede decodificar, como H.264 4:4:4.
+
+### Corregido
+
+- Las filas del inicio conservan su posición al volver de un video o una foto.
+- El área destacada ya no muestra un instante la imagen anterior.
+- Un video o una foto que no abre muestra un mensaje y sigue con el siguiente.
