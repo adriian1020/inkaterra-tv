@@ -94,10 +94,10 @@ derecha, el foco volvió a «Reserva Amazónica 01», la última foto que se vio
 |---|---|
 | Formato (`ktlintCheck`) | ✅ Sin problemas |
 | Análisis (`lintDebug`, avisos como errores) | ✅ Sin problemas |
-| Pruebas en la PC (`testDebugUnitTest`) | ✅ 78 de 78 (29 nuevas) |
+| Pruebas en la PC (`testDebugUnitTest`) | ✅ 80 de 80 (31 nuevas) |
 | APK (`assembleDebug`) | ✅ |
 | Pruebas en el Xiaomi (`tool/tv.sh probar`) | ✅ 12 de 12 (`VolumenesUsbTest` excluida, sin USB) |
-| Video 4K entero en la app | ✅ HEVC 4K a 40 Mbps: 750 cuadros mostrados, 0 perdidos |
+| Video 4K entero en la app | ✅ HEVC 4K a 40 y a 60 Mbps: 750 cuadros mostrados, 0 perdidos en cada uno |
 | CI en GitHub | ⏳ Al subir la rama |
 | Revisión final de la rama (revisor aparte) | ✅ 0 críticos · 4 importantes corregidos · 10 menores anotados |
 
@@ -111,6 +111,7 @@ en la TV → commit → unión a `sprint-2/integracion`.
 | Decisión | Motivo |
 |---|---|
 | D-21: retomar en memoria, seguir con el siguiente video, presentación que arranca sola | Elegido por Adrián; en un hotel, lo que vio un huésped no queda para el siguiente |
+| Límite de tasa de 60 a 62 Mbps (D-13) | Un video exportado «a 60 Mbps» mide 60,6 y quedaba afuera; decidido por Adrián |
 | Rechazar por el perfil, no solo por el códec | H.264 4:4:4 es «AVC» pero el Xiaomi no lo decodifica |
 | La barra del video también se ve si hay error | Así se sabe qué video no se pudo reproducir |
 | Pausar el video si la app pasa a segundo plano | Si no, seguía sonando después de apretar Inicio en el control |
@@ -131,7 +132,7 @@ en la TV → commit → unión a `sprint-2/integracion`.
 | Revisión: ninguna prueba recorría videos que fallan | `ReproductorPantallaTest` recorre tres videos rotos hasta volver |
 | La prueba del plan pausaba a los 4 s, antes del mínimo de 5 s para retomar | Pausa a los 7 s |
 | En las pruebas en la TV, `Thread.sleep` no mueve el reloj de Compose | La prueba avanza el reloj de la prueba para que pasen los 8 s de la foto y para leer el tiempo |
-| `hevc-60m.mp4` mide 60,6 Mbps y la regla de 60 Mbps lo rechaza | La medición se hizo con `hevc-40m.mp4`; ver el pendiente de abajo |
+| `hevc-60m.mp4` mide 60,6 Mbps y la regla de 60 Mbps lo rechazaba | Adrián decidió subir el límite a 62 Mbps (D-13); después se vio entero con 0 cuadros perdidos |
 
 ---
 
@@ -141,9 +142,6 @@ en la TV → commit → unión a `sprint-2/integracion`.
   1080p) a «Río» (HEVC 4K), la captura por adb sale negra, aunque el registro cuenta todos los
   cuadros mostrados y el compositor de la TV tiene el video en pantalla. Probablemente es un
   límite de la captura en este Amlogic, pero hay que confirmarlo mirando la TV.
-- **Videos «de 60 Mbps» que miden un poco más:** un archivo codificado a 60 Mbps puede medir
-  60,6 y quedar afuera (D-13). Si el hotel los va a exportar así, conviene un margen (por
-  ejemplo, 62 Mbps) o pedir que se exporten a 50.
 - **Menores de la revisión del sprint 2, para más adelante:** saltar en un archivo sin índice lo
   reinicia; una tecla justo al terminar un video puede saltarse el siguiente; si el panel lateral
   de Google TV está abierto cuando termina el último video, no vuelve solo al inicio; si la

@@ -1,14 +1,16 @@
 // Reglas de contenido: qué archivos acepta la TV. El tipo sale de la extensión; un video entra
 // si no pasa de 4K (en cualquier orientación), usa un códec que la TV decodifica, la TV tiene un
-// decodificador para su perfil (D-21) y no supera la tasa medida en el Xiaomi (D-13). Kotlin puro: lo usan la carpeta del hotel, la USB y, en la
-// Fase 2, el panel al subir.
+// decodificador para su perfil (D-21) y no supera la tasa medida en el Xiaomi (D-13). Kotlin
+// puro: lo usan la carpeta del hotel, la USB y, en la Fase 2, el panel al subir.
 package pe.inkaterra.tv.dominio
 
 enum class TipoContenido { VIDEO, FOTO, MUSICA }
 
 const val ANCHO_MAXIMO = 3840
 const val ALTO_MAXIMO = 2160
-const val TASA_MAXIMA_BPS = 60_000_000
+// 60 Mbps medidos sin perder cuadros, más un margen: un video exportado «a 60 Mbps» mide un poco
+// más (60,6) y no debe quedar afuera (D-13).
+const val TASA_MAXIMA_BPS = 62_000_000
 
 private val extensiones =
     mapOf(

@@ -57,6 +57,14 @@ class ReglasContenidoTest {
             evaluarVideo(v(3840, 2160, tasa = TASA_MAXIMA_BPS + 1)),
         )
 
+    // Un video exportado Â«a 60 MbpsÂ» mide un poco más (hevc-60m.mp4 da 60,6): entra con el margen.
+    @Test
+    fun aceptaSesentaMbpsConMargen() = assertNull(evaluarVideo(v(3840, 2160, tasa = 60_624_957)))
+
+    @Test
+    fun rechazaMasDeSesentaYDos() =
+        assertEquals(MotivoRechazo.TasaExcedida(62_000_001), evaluarVideo(v(3840, 2160, tasa = 62_000_001)))
+
     @Test
     fun tasaDesconocidaSeAcepta() = assertNull(evaluarVideo(v(3840, 2160, tasa = null)))
 
