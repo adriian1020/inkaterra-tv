@@ -112,6 +112,7 @@ La app de TV agregaría un dominio más al edge (por ejemplo `tv.inkaterra.pe`) 
 | D-20 | Inicio estilo Netflix: área destacada arriba y filas con miniaturas (Destacados, Videos, Fotos y Música), sin pantallas de sección | Pedido a Adrián. El detalle, y lo que no se toma de Netflix, en [decisiones.md](decisiones.md) |
 | D-21 | Retomar solo mientras la app está abierta, siguiente video al terminar y presentación de fotos que arranca sola | Elegido por Adrián; recordar posiciones en la TV dejaría rastro al siguiente huésped |
 | D-22 | La música se detiene al salir; repetir la lista por omisión; música de fondo aleatoria en las fotos; la USB en una sola fila, recientes primero | Elegido por Adrián; una TV de hotel no necesita música mientras se navega y la carpeta de un celular es difícil de recorrer con el control |
+| D-23 | Barra lateral (Inicio, Tu USB, Idioma); «Tu USB» como sección con Videos, Fotos y Música; botones en el video; versión optimizada | Pedido de Adrián tras probarlo: «esto va para una empresa»; la versión de prueba era la lenta |
 
 ### Decisiones pendientes
 
