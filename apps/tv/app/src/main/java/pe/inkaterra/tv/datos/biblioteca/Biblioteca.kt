@@ -74,3 +74,8 @@ class Biblioteca(
             MotivoRechazo.ArchivoIlegible
         }
 }
+
+// Lo que muestra la fila de la USB (D-22): fotos y videos, del más nuevo al más viejo; la música
+// de la memoria no se muestra.
+fun ContenidoBiblioteca.paraLaUsb(): List<Elemento> =
+    (videos + fotos).sortedWith(compareByDescending<Elemento> { it.archivo.modificadoMs }.thenBy { it.titulo })
