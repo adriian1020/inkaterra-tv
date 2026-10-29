@@ -1,6 +1,7 @@
 // Prueba en el equipo del recorrido del sprint 3 con teclas como las del control (D-22): una canción
 // suena, la tecla de música del control pasa a la siguiente y Atrás la detiene y vuelve a su
-// tarjeta; la presentación de fotos suena con música de fondo y Enter la pausa. Usa la música de
+// tarjeta; la presentación de fotos suena con música de fondo y Enter la pausa. También la barra
+// lateral y los botones del video (D-23). Usa la música de
 // muestra de tool/copiar-contenido.sh y fotos que escribe la propia prueba. La USB del huésped no
 // se puede probar así: con la depuración encendida el Xiaomi no lee la memoria (D-18).
 //   tool/copiar-contenido.sh && tool/tv.sh probar pe.inkaterra.tv.FlujoSprint3Test
@@ -13,11 +14,14 @@ import android.graphics.Color
 import android.media.AudioManager
 import android.os.LocaleList
 import android.view.KeyEvent
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -122,6 +126,68 @@ class FlujoSprint3Test {
             esperarMusica(sonando = false, ms = 2_000)
             tecla(KeyEvent.KEYCODE_BACK)
             esperarFoco("tarjeta-FOTOS-0")
+        }
+    }
+
+    // Los segundos que marca la barra del video: "0:07 / 0:25" da 7.
+    private fun segundosEnLaBarra(): Int {
+        regla.waitUntilExactlyOneExists(hasTestTag("video-tiempo"), 10_000)
+        val texto =
+            regla
+                .onNodeWithTag("video-tiempo")
+                .fetchSemanticsNode()
+                .config
+                .getOrNull(SemanticsProperties.Text)
+                ?.joinToString()
+                .orEmpty()
+        val (minutos, segundos) = texto.substringBefore(" /").split(":").map { it.trim().toInt() }
+        return minutos * 60 + segundos
+    }
+
+    // La barra lateral y los botones del video (D-23). Usa además un video de tool/videos-prueba.sh.
+    @Test
+    fun barraYVideo() {
+        val muestra = File(requireNotNull(contexto.getExternalFilesDir("prueba-4k")), "hevc-20m.mp4")
+        assertTrue("Falta $muestra: correr tool/videos-prueba.sh", muestra.isFile)
+        muestra.copyTo(File(File(raiz, "videos").apply { mkdirs() }, muestra.name))
+        val intent =
+            Intent(contexto, MainActivity::class.java)
+                .putExtra(MainActivity.EXTRA_RAIZ_CONTENIDO, raiz.absolutePath)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        ActivityScenario.launch<MainActivity>(intent).use {
+            // 1. Izquierda desde la primera tarjeta abre la barra en Inicio.
+            esperarFoco("tarjeta-VIDEOS-0")
+            tecla(KeyEvent.KEYCODE_DPAD_LEFT)
+            esperarFoco("barra-INICIO")
+
+            // 2. «Tu USB» sin memoria pide conectarla (con la depuración encendida, el Xiaomi no la lee).
+            tecla(KeyEvent.KEYCODE_DPAD_DOWN)
+            esperarFoco("barra-USB")
+            tecla(KeyEvent.KEYCODE_DPAD_CENTER)
+            regla.waitUntilExactlyOneExists(hasTestTag("aviso-usb"), 10_000)
+
+            // 3. Inicio vuelve a la tarjeta donde estaba.
+            tecla(KeyEvent.KEYCODE_DPAD_UP)
+            esperarFoco("barra-INICIO")
+            tecla(KeyEvent.KEYCODE_DPAD_CENTER)
+            esperarFoco("tarjeta-VIDEOS-0")
+
+            // 4. En el video, el botón «adelantar» salta 10 s.
+            tecla(KeyEvent.KEYCODE_DPAD_CENTER)
+            esperarFoco("video-alternar")
+            val antes = segundosEnLaBarra()
+            tecla(KeyEvent.KEYCODE_DPAD_RIGHT)
+            esperarFoco("video-adelantar")
+            tecla(KeyEvent.KEYCODE_DPAD_CENTER)
+            // La barra lee el reproductor cada 500 ms con el reloj de la prueba: se avanza para que lea.
+            Thread.sleep(500)
+            regla.mainClock.advanceTimeBy(600)
+            val despues = segundosEnLaBarra()
+            assertTrue("De $antes s pasó a $despues s", despues >= antes + 10)
+
+            // 5. Un solo Atrás vuelve a la tarjeta del video.
+            tecla(KeyEvent.KEYCODE_BACK)
+            esperarFoco("tarjeta-VIDEOS-0")
         }
     }
 }
