@@ -363,3 +363,158 @@ git commit -m "test(app): flujo del sprint 3 en el Xiaomi, prueba de la usb e in
 ```
 
 **Criterio de aceptación del sprint:** en el Xiaomi suena una lista completa con repetir y orden aleatorio, la presentación pasa con música de fondo, y en la prueba a mano una memoria con fotos de celular aparece como «Tu USB» al conectarla y desaparece sin dejar nada al retirarla.
+
+---
+
+## Segunda parte: barra lateral, sección «Tu USB», botones del video y versión optimizada (D-23)
+
+Después de la revisión final, Adrián probó la app en el Xiaomi y pidió cambios antes del PR. La
+decisión está en D-23. El paso 3.6 queda partido: sus pasos 1 a 3 ya están hechos y sus pasos 4 y 5
+(prueba a mano, D-18, informe y PR) pasan al paso 3.11.
+
+**Restricciones de esta parte** (además de las globales):
+- Barra lateral: tres opciones en este orden, `INICIO`, `USB` e `IDIOMA`, con `testTag("barra-<OPCION>")`. Cerrada mide 72 dp (solo íconos); con el foco en cualquiera de sus opciones mide 260 dp y muestra los nombres, encima del contenido (las filas no se corren). La opción de la sección actual va con fondo verde `#5A6A40`; «Tu USB» lleva un punto si hay memoria.
+- Textos nuevos (es / en): `barra_inicio` «Inicio» / «Home»; `usb_conecta` «Conecta tu memoria USB a la TV para ver tus fotos, videos y música» / «Plug your USB drive into the TV to see your photos, videos and music». «Tu USB» usa `fila_usb`; la opción de idioma muestra el otro idioma, como el botón de hoy.
+- Video: botones con `testTag` `video-anterior`, `video-retroceder`, `video-alternar`, `video-adelantar` y `video-siguiente`, con el mismo estilo que los de la música; el foco va a `video-alternar` cada vez que la barra aparece.
+
+**Foco de revisión de esta parte:**
+1. **Conectar la memoria mientras se ve un video del hotel:** el video sigue; al volver al inicio no se salta a «Tu USB». Prueba `alConectarViendoAlgoSoloMarca` (paso 3.9).
+2. **Retirar la memoria con la sección «Tu USB» abierta o con algo de ella en pantalla:** se vuelve a la sección Inicio con el foco en una tarjeta. Pruebas `alRetirarVuelveAlInicio` y `alRetirarLaUsbElVisorVuelveAlInicio` (paso 3.9).
+3. **Atrás en el inicio:** nunca deja al huésped sin salida; de la primera fila va a la barra y de la barra sale. Prueba `atrasEnLaPrimeraFilaVaALaBarraYDespuesSale` (paso 3.9).
+4. **Con la barra del video visible, las flechas:** mueven el foco entre los botones y no saltan 10 s. Prueba `conLaBarraVisibleLasFlechasMuevenElFoco` (paso 3.8).
+
+---
+
+### Paso 3.7: versión optimizada
+
+**Rama:** `build/version-optimizada`
+
+**Archivos:** modificar `apps/tv/app/build.gradle.kts`, `tool/tv.sh` y `docs/pruebas/usb-a-mano.md`.
+
+- [ ] **Paso 1: en `build.gradle.kts`**, `buildTypes { release { isMinifyEnabled = true; isShrinkResources = true; proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"); signingConfig = signingConfigs.getByName("debug") } }`, con un comentario que diga que la clave del hotel llega con el piloto (D-23). `proguard-rules.pro` se crea vacío salvo que R8 pida reglas.
+- [ ] **Paso 2: en `tool/tv.sh`**, `instalar` usa `:app:installRelease` e `instalar depuracion` usa `:app:installDebug`; los permisos y el `am start` quedan igual para las dos. Actualizar la línea de uso y el comentario.
+- [ ] **Paso 3: verificar en el Xiaomi**
+
+Run: `tool/tv.sh instalar`, y luego `adb shell am start -W -S -n pe.inkaterra.tv/.app.MainActivity` dos veces y `dumpsys gfxinfo pe.inkaterra.tv` después de recorrer las filas.
+Expected: arranque por debajo de 1 000 ms y cuadros lentos por debajo del 10 %; la app abre, recorre las filas y reproduce un video y una canción.
+
+- [ ] **Paso 4: en `usb-a-mano.md`**, la prueba se hace con `tool/tv.sh instalar depuracion` (registra los nombres) y con el búfer del registrador en 8 M (Opciones de desarrollador); el registro se guarda al terminar.
+- [ ] **Paso 5: CI (`ktlintCheck lintDebug testDebugUnitTest assembleDebug assembleRelease`), commit y unión**
+
+```bash
+git commit -m "build(tv): versión optimizada con r8 (paso 3.7)"
+```
+
+---
+
+### Paso 3.8: botones en el reproductor de video
+
+**Rama:** `feat/pantallas-botones-video`
+
+**Archivos:**
+- Crear: `pantallas/video/BotonesVideo.kt`, `pantallas/comun/BotonIcono.kt` y los íconos `res/drawable/ic_retroceder_10.xml` e `ic_adelantar_10.xml` (Material Icons `replay_10` y `forward_10`).
+- Modificar: `pantallas/video/ListaVideos.kt`, `pantallas/video/ReproductorPantalla.kt`, `pantallas/musica/ReproductorMusicaPantalla.kt` (su `Boton` pasa a `BotonIcono`) y los `strings.xml`.
+- Prueba: `ListaVideosTest` y `ReproductorPantallaTest`.
+
+**Interfaces:**
+- Produce: `fun anteriorVideo(fila: List<Elemento>, actual: Int): Int?` (el video anterior de la fila, saltando las fotos; `null` en el primero); `@Composable fun BotonIcono(@DrawableRes icono: Int, descripcion: String, etiqueta: String, modifier: Modifier = Modifier, activo: Boolean = true, alElegir: () -> Unit)`; `@Composable fun BotonesVideo(pausado: Boolean, focoInicial: FocusRequester, alAnterior: () -> Unit, alRetroceder: () -> Unit, alAlternar: () -> Unit, alAdelantar: () -> Unit, alSiguiente: () -> Unit)`.
+- Textos (es / en): `video_anterior` «Video anterior» / «Previous video»; `video_retroceder` «Retroceder 10 segundos» / «Back 10 seconds»; `video_adelantar` «Adelantar 10 segundos» / «Forward 10 seconds»; `video_siguiente` «Video siguiente» / «Next video». Pausar y reproducir usan `musica_pausar` y `musica_reproducir`.
+- Comportamiento: con la barra escondida, `onPreviewKeyEvent` hace lo de hoy y la muestra; con la barra visible solo atiende las teclas de medios y deja las flechas y Enter a los botones. Cada vez que la barra aparece, el foco va a `video-alternar`; cuando se esconde, vuelve a la pantalla. Cada tecla (también en los botones) cuenta para los 5 s de la barra. «Anterior»: si la posición pasa de 3 000 ms, `seekTo(0)`; si no, `anteriorVideo` o, en el primero, `seekTo(0)`. «Siguiente» hace lo mismo que al terminar.
+
+- [ ] **Paso 1: escribir las pruebas que fallan**
+
+`ListaVideosTest`: `anteriorSaltaLasFotos` (`anteriorVideo(listOf(video1, foto, video2), 2) == 0`) y `antesDelPrimeroNoHayNada` (`anteriorVideo(listOf(video1, video2), 0) == null`).
+
+`ReproductorPantallaTest` (tres videos rotos, como hoy):
+- `conLaBarraVisibleLasFlechasMuevenElFoco`: al abrir, `video-alternar` tiene el foco; Derecha deja el foco en `video-adelantar`.
+- `botonSiguientePasaAlSiguiente`: Derecha dos veces y Enter en `video-siguiente` cambian `video-titulo` a «Roto 2».
+
+- [ ] **Paso 2: correrlas y ver que fallan**
+
+Run: `./gradlew testDebugUnitTest --tests '*ListaVideosTest' --tests '*ReproductorPantallaTest'`
+Expected: FAIL.
+
+- [ ] **Paso 3: implementar `anteriorVideo`, `BotonIcono`, `BotonesVideo`, los íconos, los textos y el manejo de teclas.** `enPausaLaPantallaPuedeApagarse` y las pruebas de navegación que abren un video siguen pasando sin cambios.
+- [ ] **Paso 4: correr todas** — Run: `./gradlew testDebugUnitTest` — Expected: PASS.
+- [ ] **Paso 5: probar en el Xiaomi** — Expected: con la barra escondida, Izquierda y Derecha saltan 10 s; con la barra visible, se recorren los botones y cada uno hace lo suyo.
+- [ ] **Paso 6: commit y unión**
+
+```bash
+git commit -m "feat(pantallas): botones en el reproductor de video (paso 3.8)"
+```
+
+---
+
+### Paso 3.9: barra lateral y sección «Tu USB»
+
+**Rama:** `feat/pantallas-barra-lateral`
+
+**Archivos:**
+- Crear: `pantallas/inicio/BarraLateral.kt` y los íconos `ic_inicio.xml`, `ic_usb.xml` e `ic_idioma.xml` (Material Icons `home`, `usb` y `translate`).
+- Modificar: `datos/biblioteca/Biblioteca.kt` (`paraLaUsb`), `datos/usb/UsbDelHuesped.kt`, `pantallas/inicio/Filas.kt`, `InicioModelo.kt`, `InicioPantalla.kt`, `app/Navegacion.kt` y los `strings.xml`.
+- Prueba: `UsbDelHuespedTest`, `FilasTest`, `InicioModeloTest`, `NavegacionTest` e `IdiomaTest`.
+
+**Interfaces:**
+- `data class ContenidoUsb(val videos: List<Elemento>, val fotos: List<Elemento>, val musica: List<Elemento>)`; `ContenidoBiblioteca.paraLaUsb(): ContenidoUsb`, cada lista del más nuevo al más viejo. `EstadoUsb.Lista(volumen, contenido: ContenidoUsb, rechazados: Int)`.
+- `TipoFila` cambia `USB` por `USB_VIDEOS`, `USB_FOTOS` y `USB_MUSICA`. `Fila` vuelve a ser `(tipo, elementos)`: se quitan `aviso`, `rechazados` y `AvisoFila`. `filasDe(contenido)` vuelve a ser solo lo del hotel.
+- `enum class AvisoUsb { SIN_MEMORIA, LEYENDO, VACIA, NO_SE_LEE }`; `data class SeccionUsb(val filas: List<Fila>, val aviso: AvisoUsb?, val rechazados: Int)`; `fun seccionUsb(estado: EstadoUsb): SeccionUsb` (en `Filas.kt`). `EstadoInicio.Listo(filas: List<Fila>, usb: SeccionUsb)`.
+- `enum class Seccion { INICIO, USB }`. `InicioModelo` suma `var seccion` (empieza en `INICIO`), `var focoUsb: Foco` (además de `foco`, que es el del inicio), `var inicioVisible: Boolean` (lo escribe `Navegacion` según el ciclo de vida de la entrada `"inicio"`) y `fun hayMemoria(): Boolean`. `enfocar(tipo, elemento)` escribe `focoUsb` si el tipo es `USB_*`. Al pasar el estado de la USB de `SinUsb` a otro: si `inicioVisible`, `seccion = USB` y `focoUsb = Foco(0, 0)`. Al pasar a `SinUsb`: `seccion = INICIO` y `focoUsb = Foco(0, 0)`.
+- `InicioPantalla` recibe `seccion`, el foco de la sección, `hayMemoria` y `alElegirSeccion: (Seccion) -> Unit`. Dibuja la `BarraLateral` a la izquierda y, al lado, el contenido de la sección: las filas (con el área destacada) o, sin filas, el texto del aviso (`testTag("aviso-usb")`), y la línea de rechazados arriba de las filas de la USB. Un contador `pedidoFoco` en la pantalla vuelve a enfocar la tarjeta guardada cuando se sale de la barra con Derecha o se elige una sección.
+- `Navegacion`: `deLaFila` busca en las filas del hotel y en las de la USB. Las rutas no cambian.
+
+- [ ] **Paso 1: escribir las pruebas que fallan**
+
+`UsbDelHuespedTest.alConectarListaFotosYVideosRecientesPrimero` pasa a esperar `contenido.videos == [nueva]`, `contenido.fotos == [media, vieja]` y `contenido.musica == [canción]`.
+
+`FilasTest` (reemplazan a las tres de la fila USB): `usbSeparaVideosFotosYMusica` (los tipos son `USB_VIDEOS, USB_FOTOS, USB_MUSICA`), `sinMemoriaPideConectarla` (`seccionUsb(SinUsb).aviso == SIN_MEMORIA`) y `memoriaIlegibleLoDice` (`NoSeLee` da `NO_SE_LEE`).
+
+`InicioModeloTest` (reemplazan a las dos de la fila USB):
+- `alConectarConElInicioVisiblePasaAUsb`: con `inicioVisible = true`, conectar deja `seccion == USB`.
+- `alConectarViendoAlgoSoloMarca`: con `inicioVisible = false`, conectar deja `seccion == INICIO` y `hayMemoria() == true`.
+- `alRetirarVuelveAlInicio`: con `seccion == USB`, retirar deja `seccion == INICIO`.
+
+`NavegacionTest` (las de la fila USB se adaptan a la sección; `atrasEnLaPrimeraFilaSaleDeLaApp` se reemplaza):
+- `izquierdaAbreLaBarra`: desde `tarjeta-DESTACADOS-0`, Izquierda deja el foco en `barra-INICIO`.
+- `derechaDesdeLaBarraVuelveALaTarjeta`: Derecha, Izquierda, Izquierda (a la barra) y Derecha dejan el foco en `tarjeta-DESTACADOS-0`.
+- `atrasEnLaPrimeraFilaVaALaBarraYDespuesSale`: Atrás deja el foco en `barra-INICIO` y la app sigue abierta; otro Atrás la cierra.
+- `tuUsbSinMemoriaPideConectarla`: Izquierda, Abajo y Enter en `barra-USB` muestran `aviso-usb` con el texto de `usb_conecta`.
+- `alConectarLaUsbApareceSuSeccion` (con el inicio al frente): conectar muestra `fila-USB_FOTOS` y `tarjeta-USB_FOTOS-0`.
+- `alRetirarLaUsbElVisorVuelveAlInicio`: con la sección USB, Enter en `tarjeta-USB_FOTOS-0` y retirar dejan `fila-DESTACADOS` a la vista y el foco en `tarjeta-DESTACADOS-0`.
+
+`IdiomaTest`: el cambio de idioma se hace con Izquierda, Abajo, Abajo y Enter en `barra-IDIOMA` en vez del botón `cambiar-idioma`.
+
+- [ ] **Paso 2: correrlas y ver que fallan**
+
+Run: `./gradlew testDebugUnitTest`
+Expected: FAIL en las nuevas y en las adaptadas.
+
+- [ ] **Paso 3: implementar** el contenido separado de la USB, la sección, la barra, el foco de la barra y Atrás. Ajustar `FlujoSprint1Test` y `FlujoSprint2Test` si usaban el botón de idioma.
+- [ ] **Paso 4: correr todas** — Run: `./gradlew testDebugUnitTest` — Expected: PASS.
+- [ ] **Paso 5: probar en el Xiaomi** con la versión optimizada — Expected: la barra se abre y se cierra; Inicio, Tu USB e Idioma funcionan; sin memoria, «Tu USB» pide conectarla.
+- [ ] **Paso 6: commit y unión**
+
+```bash
+git commit -m "feat(pantallas): barra lateral y sección tu usb (paso 3.9)"
+```
+
+---
+
+### Paso 3.10: prueba integral de la segunda parte
+
+**Rama:** `test/flujo-sprint3-barra`
+
+- [ ] **Paso 1: ampliar `FlujoSprint3Test`** con `barraYVideo`: Izquierda abre la barra (`barra-INICIO` con el foco); Abajo y Enter en `barra-USB` muestran `aviso-usb`; Arriba, Enter en `barra-INICIO` y Derecha vuelven a las tarjetas; en un video, Derecha y Enter en `video-adelantar` hacen avanzar el tiempo de `video-tiempo` en 10 s o más.
+- [ ] **Paso 2: CI y todas las pruebas en el Xiaomi** — Run: `(cd apps/tv && ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug assembleRelease) && EXCLUIR=pe.inkaterra.tv.sistema.VolumenesUsbTest tool/tv.sh probar` — Expected: todo en verde.
+- [ ] **Paso 3: commit y unión**
+
+```bash
+git commit -m "test(app): barra lateral y botones del video en el xiaomi (paso 3.10)"
+```
+
+---
+
+### Paso 3.11: prueba de la USB a mano, informe y PR
+
+Los pasos 4 y 5 del paso 3.6: Adrián hace la prueba a mano con `tool/tv.sh instalar depuracion` y el búfer en 8 M; se lee el registro, se completa D-18, se escriben el informe del sprint y el CHANGELOG, se actualizan `docs/arquitectura.md` y `docs/plan-de-desarrollo.md`, y se abre el PR de `sprint-3/integracion` hacia `main` con el visto bueno de Adrián.
+
+**Criterio de aceptación de la segunda parte:** en el Xiaomi, con la versión optimizada, la app se siente fluida (arranque por debajo de 1 s); la barra lateral lleva a Inicio, a Tu USB y al idioma; «Tu USB» muestra la memoria en filas de videos, fotos y música, y sin memoria pide conectarla; y el video se puede adelantar, retroceder y pasar con los botones.

@@ -272,7 +272,8 @@ se decide durante los sprints siguientes.
     la música. Si no hay música, la presentación pasa en silencio.
   - **La USB en una sola fila.** «Tu USB» trae todas las fotos y videos de la memoria, de
     cualquier carpeta, del más nuevo al más viejo; no se recorren carpetas. La música de la USB
-    no se muestra.
+    no se muestra. **Cambia con D-23:** la USB pasa a ser una sección de la barra lateral, con
+    filas de videos, fotos y música.
 - **Decidido al planificar:**
   - **Permisos de fotos y videos:** Android 14 los pide para leer la memoria. Se dan al instalar
     la app por adb (`tool/tv.sh instalar`), como los demás ajustes de cada TV (D-16), y nunca se
@@ -287,3 +288,33 @@ se decide durante los sprints siguientes.
 - **Por qué:** una TV de hotel no necesita música mientras se navega, y la carpeta de un celular
   (`DCIM/Camera`, `WhatsApp/Media`…) es difícil de recorrer con el control; ordenar por fecha
   pone primero lo que el huésped acaba de tomar.
+
+## D-23. Barra lateral, sección «Tu USB», botones del video y versión optimizada
+
+- **Qué** (pedido por Adrián después de probar el sprint 3 en el Xiaomi, el 29 de octubre):
+  - **Barra lateral a la izquierda, como la de Netflix**, con **Inicio**, **Tu USB** e
+    **Idioma**. Es una columna angosta de íconos que, al recibir el foco, se abre sobre el
+    contenido con los nombres. La sección actual se marca en verde y «Tu USB» lleva un punto si
+    hay una memoria conectada. El botón de idioma de arriba a la derecha pasa a la barra.
+  - **Moverse:** Izquierda desde la primera tarjeta de una fila abre la barra; Derecha vuelve a la
+    tarjeta donde estaba. Enter en Inicio o Tu USB cambia de sección. Atrás fuera de la primera
+    fila sube a la primera tarjeta; en la primera fila va a la barra; en la barra cierra la app.
+  - **«Tu USB» es una sección**, con el mismo diseño que el inicio: área destacada y filas
+    **Videos**, **Fotos** y **Música** de la memoria, de lo más nuevo a lo más viejo. La fila «Tu
+    USB» del inicio desaparece. La opción está siempre en la barra; sin memoria, la sección dice
+    «Conecta tu memoria USB a la TV para ver tus fotos, videos y música».
+  - **La música de la USB se muestra y suena** con el reproductor de música (cambia D-22). La
+    música de fondo de las fotos sigue siendo la del hotel.
+  - **Al conectar la memoria**, si el huésped está en el inicio, la app pasa sola a «Tu USB»; si
+    está viendo algo, no se interrumpe. **Al retirarla**, se vuelve a la sección Inicio.
+  - **Botones en el reproductor de video:** anterior, retroceder 10 s, pausar, adelantar 10 s y
+    siguiente, con la barra del video. Con la barra escondida, las teclas funcionan como antes
+    (D-21) y la muestran; con la barra visible, las flechas pasan de un botón a otro y Enter los
+    activa. «Anterior» vuelve al principio si pasaron más de 3 s; si no, va al video anterior.
+  - **Versión optimizada:** la app suma una versión «release» con R8, firmada por ahora con la
+    clave de depuración (la del hotel llega con el piloto). `tool/tv.sh instalar` instala esa;
+    `tool/tv.sh instalar depuracion`, la de prueba, que registra los nombres de los archivos.
+- **Por qué:** «esto va para una empresa: tenemos que ser organizados». Con la memoria en una sola
+  fila todo quedaba amontonado y sin la música; y sin botones nadie sabía que el video se podía
+  adelantar. En el Xiaomi, la versión de prueba arrancaba en 1,5 a 1,9 s y perdía el 61 % de los
+  cuadros al recorrer las filas; la optimizada, 0,3 a 0,7 s y el 2 %.
