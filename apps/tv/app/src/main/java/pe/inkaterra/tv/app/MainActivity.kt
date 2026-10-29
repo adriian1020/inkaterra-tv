@@ -18,7 +18,16 @@ class MainActivity : AppCompatActivity() {
         // Solo en depuración, las pruebas en la TV pueden leer otra carpeta de contenido.
         val raizDePrueba = intent.getStringExtra(EXTRA_RAIZ_CONTENIDO)?.takeIf { BuildConfig.DEBUG }?.let(::File)
         val contenedor = if (raizDePrueba != null) Contenedor(this, raizDePrueba) else Contenedor(this)
-        setContent { TemaInkaterra { Navegacion(contenedor.biblioteca, contenedor.miniaturas, contenedor.idioma) } }
+        setContent {
+            TemaInkaterra {
+                Navegacion(
+                    contenedor.biblioteca,
+                    contenedor.miniaturas,
+                    contenedor.posiciones,
+                    contenedor.idioma,
+                )
+            }
+        }
     }
 
     companion object {

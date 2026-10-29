@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import coil3.compose.AsyncImage
 import pe.inkaterra.tv.R
@@ -34,10 +35,19 @@ fun Miniatura(
     miniaturas: Miniaturas,
     modifier: Modifier = Modifier,
 ) {
+    // Al cambiar de elemento vuelve a Cargando: si no, el área destacada seguía mostrando la imagen
+    // anterior mientras se generaba la nueva.
     val estado by produceState<EstadoMiniatura>(EstadoMiniatura.Cargando, elemento) {
+        value = EstadoMiniatura.Cargando
         value = EstadoMiniatura.Lista(miniaturas.de(elemento))
     }
-    Box(modifier.background(ColoresInkaterra.verdeSecundario)) {
+    val cargando = estado !is EstadoMiniatura.Lista
+    Box(
+        modifier
+            .background(
+                ColoresInkaterra.verdeSecundario,
+            ).then(if (cargando) Modifier.testTag("miniatura-cargando") else Modifier),
+    ) {
         val lista = estado as? EstadoMiniatura.Lista ?: return@Box
         when {
             lista.archivo != null ->

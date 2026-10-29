@@ -1,10 +1,14 @@
 // El inicio estilo Netflix con el control remoto (D-20): foco, filas, área destacada y Atrás.
 package pe.inkaterra.tv.pantallas
 
+import android.graphics.Bitmap
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -12,6 +16,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import kotlinx.coroutines.Dispatchers
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -21,7 +26,14 @@ import org.robolectric.annotation.Config
 import pe.inkaterra.tv.app.Navegacion
 import pe.inkaterra.tv.app.TemaInkaterra
 import pe.inkaterra.tv.datos.biblioteca.ArchivoLocal
+import pe.inkaterra.tv.datos.biblioteca.Elemento
+import pe.inkaterra.tv.datos.biblioteca.archivo
+import pe.inkaterra.tv.datos.miniaturas.GeneradorMiniatura
+import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.dominio.PosicionesVideo
 import pe.inkaterra.tv.sistema.idioma.Idioma
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 @Config(qualifiers = "es")
@@ -32,11 +44,13 @@ class NavegacionTest {
     @get:Rule(order = 1)
     val regla = createAndroidComposeRule<ComponentActivity>()
 
-    private fun abrir(archivos: List<ArchivoLocal> = contenidoDePrueba) {
+    private fun abrir(
+        archivos: List<ArchivoLocal> = contenidoDePrueba,
+        miniaturas: Miniaturas = miniaturasSinImagen(temporal.root),
+    ) {
         val biblioteca = bibliotecaDePrueba(archivos)
-        val miniaturas = miniaturasSinImagen(temporal.root)
         val idioma = AjusteIdiomaFalso(Idioma.ESPANOL)
-        regla.setContent { TemaInkaterra { Navegacion(biblioteca, miniaturas, idioma) } }
+        regla.setContent { TemaInkaterra { Navegacion(biblioteca, miniaturas, PosicionesVideo(), idioma) } }
         regla.waitForIdle()
     }
 
@@ -100,7 +114,7 @@ class NavegacionTest {
         tecla(Key.DirectionDown)
         tecla(Key.DirectionRight)
         tecla(Key.Enter)
-        regla.onNodeWithTag("abrir-titulo").assertTextEquals("Río Madre de Dios")
+        regla.onNodeWithTag("video-titulo").assertTextEquals("Río Madre de Dios")
         atras()
         foco("tarjeta-VIDEOS-1")
     }
@@ -133,7 +147,7 @@ class NavegacionTest {
         regla.mainClock.autoAdvance = true
         regla.waitForIdle()
         atras()
-        regla.onNodeWithTag("abrir-titulo").assertDoesNotExist()
+        regla.onNodeWithTag("foto-titulo").assertDoesNotExist()
         foco("tarjeta-DESTACADOS-0")
     }
 
@@ -148,7 +162,57 @@ class NavegacionTest {
         regla.runOnUiThread { regla.activity.onBackPressedDispatcher.onBackPressed() }
         regla.mainClock.autoAdvance = true
         regla.waitForIdle()
-        regla.onNodeWithTag("abrir-titulo").assertDoesNotExist()
+        regla.onNodeWithTag("video-titulo").assertDoesNotExist()
         foco("tarjeta-VIDEOS-0")
+    }
+
+    @Test
+    fun alVolverDeLasFotosElFocoVaALaUltima() {
+        abrir((1..3).map { archivo("Reserva Amazónica 0$it.jpg") })
+        foco("tarjeta-FOTOS-0")
+        tecla(Key.Enter)
+        regla.onNodeWithTag("foto-titulo").assertTextEquals("Reserva Amazónica 01")
+        tecla(Key.DirectionRight)
+        atras()
+        foco("tarjeta-FOTOS-1")
+    }
+
+    @Test
+    @Config(qualifiers = "es-w960dp-h540dp")
+    fun alVolverLasFilasConservanSuPosicion() {
+        abrir((1..6).map { archivo("Reserva Amazónica 0$it.jpg") } + archivo("Selva.mp3"))
+        repeat(5) { tecla(Key.DirectionRight) }
+        tecla(Key.DirectionDown)
+        foco("tarjeta-MUSICA-0")
+        tecla(Key.Enter)
+        atras()
+        foco("tarjeta-MUSICA-0")
+        regla.onNodeWithTag("tarjeta-FOTOS-5").assertIsDisplayed()
+    }
+
+    // El área destacada no deja la imagen anterior mientras se genera la del nuevo foco.
+    @Test
+    fun areaDestacadaNoMuestraLaImagenAnterior() {
+        val soltar = CountDownLatch(1)
+        val generador =
+            object : GeneradorMiniatura {
+                override fun generar(elemento: Elemento): Bitmap? =
+                    when (elemento.titulo) {
+                        "Oferta spa" -> Bitmap.createBitmap(16, 9, Bitmap.Config.ARGB_8888)
+                        "Reserva Amazónica 01" -> null.also { soltar.await(10, TimeUnit.SECONDS) }
+                        else -> null
+                    }
+            }
+        try {
+            abrir(miniaturas = Miniaturas(generador, temporal.newFolder("miniaturas"), Dispatchers.IO))
+            regla.mainClock.autoAdvance = false
+            regla.onRoot().performKeyInput { pressKey(Key.DirectionRight) }
+            regla.mainClock.advanceTimeBy(600)
+            regla
+                .onNode(hasTestTag("miniatura-cargando") and hasAnyAncestor(hasTestTag("area-destacada")))
+                .assertExists()
+        } finally {
+            soltar.countDown()
+        }
     }
 }
