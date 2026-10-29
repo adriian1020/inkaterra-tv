@@ -257,3 +257,33 @@ se decide durante los sprints siguientes.
   esta foto» y, en la presentación, pasa a la siguiente a los 3 s. Además, la biblioteca rechaza
   los videos que ningún decodificador de la TV puede abrir (por ejemplo H.264 4:4:4), y los
   rechazados quedan en el registro (`logcat`, etiqueta «Contenido»).
+
+## D-22. Música y USB del huésped
+
+- **Qué** (elegido por Adrián al planificar el sprint 3):
+  - **La música se detiene al salir.** Al elegir una canción suena toda la fila Música desde
+    ella; Atrás detiene la música y vuelve a la tarjeta de la canción que sonaba. No hay música
+    en segundo plano mientras se recorre el inicio.
+  - **Repetir la lista por omisión.** Al terminar la última canción vuelve a empezar. El huésped
+    puede cambiar a «repetir esta canción» o «sin repetir», y activar el orden aleatorio
+    (empieza apagado). Los dos vuelven a su valor cada vez que se abre una canción.
+  - **Música de fondo en las fotos:** las canciones de la fila Música, en orden aleatorio y en
+    bucle, en toda presentación, también en las fotos de la USB. Enter pausa la presentación y
+    la música. Si no hay música, la presentación pasa en silencio.
+  - **La USB en una sola fila.** «Tu USB» trae todas las fotos y videos de la memoria, de
+    cualquier carpeta, del más nuevo al más viejo; no se recorren carpetas. La música de la USB
+    no se muestra.
+- **Decidido al planificar:**
+  - **Permisos de fotos y videos:** Android 14 los pide para leer la memoria. Se dan al instalar
+    la app por adb (`tool/tv.sh instalar`), como los demás ajustes de cada TV (D-16), y nunca se
+    le muestra un diálogo al huésped. Si faltan, la fila dice que la memoria no se puede leer y
+    el registro dice por qué.
+  - **Avisos en la fila:** si la memoria está vacía, no se puede leer (por ejemplo, NTFS) o trae
+    archivos que la TV no puede ver (como un video de más de 4K), la fila lo dice en palabras
+    simples (CU-17 1a y 3b).
+  - **Sin rastro (D-10):** las miniaturas de la USB viven solo en memoria. Al retirarla se
+    olvidan sus miniaturas, dónde retomar sus videos y las fotos que quedaron en memoria. Los
+    nombres de sus archivos van al registro solo en la versión de prueba.
+- **Por qué:** una TV de hotel no necesita música mientras se navega, y la carpeta de un celular
+  (`DCIM/Camera`, `WhatsApp/Media`…) es difícil de recorrer con el control; ordenar por fecha
+  pone primero lo que el huésped acaba de tomar.
