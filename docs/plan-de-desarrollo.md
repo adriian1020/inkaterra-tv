@@ -683,7 +683,7 @@ Una historia está terminada cuando:
 - [x]  Sprint 1 (28 de octubre): ver el [informe del sprint 1](informes/sprint-1.md) y la decisión D-20
 - [x]  Sprint 2 (28 de octubre): ver el [informe del sprint 2](informes/sprint-2.md) y la decisión D-21
 - [x]  Subir los sprints 0 y 1 y unirlos a `main` (PR 1 y 2)
-- [ ]  Mirar en la TV el paso de un video H.264 a uno HEVC (en la captura por adb sale negro)
+- [x]  Mirar en la TV el paso de un video H.264 a uno HEVC: se ve bien (la captura por adb salía negra)
 - [x]  Videos de 60 Mbps que miden un poco más (60,6): el límite pasa a 62 Mbps (D-13)
 - [ ]  Mostrar el inicio estilo Netflix (las capturas del informe del sprint 1 o la app en el Xiaomi) a quien lo pidió y confirmarlo (D-20)
 - [ ]  Probar una memoria USB en la TV (D-18), antes del sprint 3

@@ -132,16 +132,13 @@ en la TV → commit → unión a `sprint-2/integracion`.
 | Revisión: ninguna prueba recorría videos que fallan | `ReproductorPantallaTest` recorre tres videos rotos hasta volver |
 | La prueba del plan pausaba a los 4 s, antes del mínimo de 5 s para retomar | Pausa a los 7 s |
 | En las pruebas en la TV, `Thread.sleep` no mueve el reloj de Compose | La prueba avanza el reloj de la prueba para que pasen los 8 s de la foto y para leer el tiempo |
+| Al pasar de un video H.264 1080p a uno HEVC 4K, la captura por adb salía negra | Adrián lo miró en la TV: el video se ve bien; es un límite de la captura en este Amlogic |
 | `hevc-60m.mp4` mide 60,6 Mbps y la regla de 60 Mbps lo rechazaba | Adrián decidió subir el límite a 62 Mbps (D-13); después se vio entero con 0 cuadros perdidos |
 
 ---
 
 ## 6. Pendientes y riesgos
 
-- **Mirar a ojo el paso de un video a otro de distinto códec.** Al pasar de «Atardecer» (H.264
-  1080p) a «Río» (HEVC 4K), la captura por adb sale negra, aunque el registro cuenta todos los
-  cuadros mostrados y el compositor de la TV tiene el video en pantalla. Probablemente es un
-  límite de la captura en este Amlogic, pero hay que confirmarlo mirando la TV.
 - **Menores de la revisión del sprint 2, para más adelante:** saltar en un archivo sin índice lo
   reinicia; una tecla justo al terminar un video puede saltarse el siguiente; si el panel lateral
   de Google TV está abierto cuando termina el último video, no vuelve solo al inicio; si la
