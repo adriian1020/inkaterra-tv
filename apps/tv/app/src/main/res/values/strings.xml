@@ -16,4 +16,14 @@
     <string name="idioma_bienvenida" translatable="false">Bienvenido · Welcome</string>
     <string name="idioma_espanol" translatable="false">Español</string>
     <string name="idioma_ingles" translatable="false">English</string>
+    <string name="musica_no_reproduce">No se puede reproducir esta canción</string>
+    <string name="musica_anterior">Anterior</string>
+    <string name="musica_reproducir">Reproducir</string>
+    <string name="musica_pausar">Pausar</string>
+    <string name="musica_siguiente">Siguiente</string>
+    <string name="musica_aleatorio_si">Orden aleatorio activado</string>
+    <string name="musica_aleatorio_no">Orden aleatorio desactivado</string>
+    <string name="musica_repetir_lista">Repetir la lista</string>
+    <string name="musica_repetir_una">Repetir esta canción</string>
+    <string name="musica_sin_repetir">Sin repetir</string>
 </resources>

@@ -1,10 +1,10 @@
 // Las pantallas de la app y cómo se pasa de una a otra. Atrás vuelve a la anterior. Si nunca se
 // eligió el idioma, se empieza por ahí. Un video abre el reproductor y una foto el visor, con los
 // videos o las fotos de su fila (en Destacados, solo los de ese tipo); al volver, el foco va a la
-// tarjeta de lo último que se vio (D-21). La música sigue en la pantalla provisional (sprint 3).
+// tarjeta de lo último que se vio (D-21). Una canción abre el reproductor de música con la fila
+// Música (D-22).
 package pe.inkaterra.tv.app
 
-import android.net.Uri
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
@@ -24,17 +24,16 @@ import pe.inkaterra.tv.datos.biblioteca.Elemento
 import pe.inkaterra.tv.datos.miniaturas.Miniaturas
 import pe.inkaterra.tv.dominio.PosicionesVideo
 import pe.inkaterra.tv.dominio.TipoContenido
-import pe.inkaterra.tv.pantallas.abrir.AbrirPantalla
 import pe.inkaterra.tv.pantallas.fotos.VisorFotosPantalla
 import pe.inkaterra.tv.pantallas.idioma.IdiomaPantalla
 import pe.inkaterra.tv.pantallas.inicio.EstadoInicio
 import pe.inkaterra.tv.pantallas.inicio.InicioModelo
 import pe.inkaterra.tv.pantallas.inicio.InicioPantalla
 import pe.inkaterra.tv.pantallas.inicio.TipoFila
+import pe.inkaterra.tv.pantallas.musica.ReproductorMusicaPantalla
 import pe.inkaterra.tv.pantallas.video.ReproductorPantalla
 import pe.inkaterra.tv.sistema.idioma.AjusteIdioma
 import pe.inkaterra.tv.sistema.idioma.Idioma
-import java.io.File
 
 @Composable
 fun Navegacion(
@@ -96,8 +95,10 @@ fun Navegacion(
                 VisorFotosPantalla(fotos, indice, alSalir)
             }
         }
-        composable("abrir/{ruta}") { entrada ->
-            AbrirPantalla(File(entrada.arguments?.getString("ruta").orEmpty()).nameWithoutExtension)
+        composable("musica/{fila}/{indice}") { entrada ->
+            DeLaFila(navegador, entrada, TipoContenido.MUSICA, ::modeloDelInicio) { canciones, indice, alSalir ->
+                ReproductorMusicaPantalla(canciones, indice, miniaturas, alSalir)
+            }
         }
     }
 }
@@ -124,7 +125,7 @@ private fun rutaDe(
     return when (elemento.tipo) {
         TipoContenido.VIDEO -> "video/${fila.name}/$indice"
         TipoContenido.FOTO -> "fotos/${fila.name}/$indice"
-        TipoContenido.MUSICA -> "abrir/${Uri.encode(elemento.archivo.ruta)}"
+        TipoContenido.MUSICA -> "musica/${fila.name}/$indice"
     }
 }
 

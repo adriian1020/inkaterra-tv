@@ -90,7 +90,7 @@ class FlujoSprint1Test {
             tecla(KeyEvent.KEYCODE_DPAD_DOWN)
             esperarFoco("tarjeta-MUSICA-0")
             tecla(KeyEvent.KEYCODE_DPAD_CENTER)
-            regla.onNodeWithTag("abrir-titulo").assertTextEquals("Selva")
+            regla.onNodeWithTag("video-titulo").assertTextEquals("Selva")
             tecla(KeyEvent.KEYCODE_BACK)
             esperarFoco("tarjeta-MUSICA-0")
         }
