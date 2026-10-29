@@ -10,4 +10,6 @@
     <string name="inicio_vacio">No content yet</string>
     <string name="video_pausado">Paused</string>
     <string name="video_no_reproduce">This video can’t be played</string>
+    <string name="presentacion_pausada">Paused</string>
+    <string name="foto_no_abre">This photo can’t be opened</string>
 </resources>
