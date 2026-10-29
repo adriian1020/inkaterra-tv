@@ -8,6 +8,7 @@ enum class TipoContenido { VIDEO, FOTO, MUSICA }
 
 const val ANCHO_MAXIMO = 3840
 const val ALTO_MAXIMO = 2160
+
 // 60 Mbps medidos sin perder cuadros, más un margen: un video exportado «a 60 Mbps» mide un poco
 // más (60,6) y no debe quedar afuera (D-13).
 const val TASA_MAXIMA_BPS = 62_000_000
