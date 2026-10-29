@@ -125,4 +125,31 @@ class UsbDelHuespedTest {
         Thread.sleep(500)
         assertEquals(EstadoUsb.SinUsb, usb.estado.value)
     }
+
+    // La app se cierra mientras lee (el inicio se destruye y corta la lectura) y se vuelve a abrir con la
+    // memoria puesta: se vuelve a leer en vez de quedar en «Leyendo» para siempre.
+    @Test
+    fun alVolverAEmpezarRetomaLaLecturaCortada() {
+        crear("video.mp4")
+        val soltar = CountDownLatch(1)
+        val lector =
+            object : LectorMetadatos {
+                override fun video(ruta: String): MetadatosVideo {
+                    soltar.await(5, TimeUnit.SECONDS)
+                    return MetadatosVideo(1920, 1080, "video/avc", 8_000_000)
+                }
+            }
+        val usb = UsbDelHuesped(volumenes, lector, { true }, { retirados += it }, true, Dispatchers.IO)
+        val primera = CoroutineScope(Dispatchers.Unconfined)
+        val escucha = usb.empezar(primera)
+        volumenes.conectar(temporal.root)
+        assertTrue(usb.estado.value is EstadoUsb.Leyendo)
+        escucha.close()
+        primera.cancel()
+        soltar.countDown()
+        usb.empezar(alcance)
+        val limite = System.currentTimeMillis() + 5_000
+        while (usb.estado.value !is EstadoUsb.Lista && System.currentTimeMillis() < limite) Thread.sleep(50)
+        assertTrue("Quedó en ${usb.estado.value}", usb.estado.value is EstadoUsb.Lista)
+    }
 }

@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
@@ -157,9 +159,12 @@ private fun DeLaFila(
         LaunchedEffect(Unit) { navegador.popBackStack() }
         return
     }
+    // Solo una vez: el video puede terminar justo cuando se aprieta Atrás. No se exige que la pantalla
+    // esté al frente: la música sale también al pasar a segundo plano (D-22).
+    var salio by remember(entrada) { mutableStateOf(false) }
     pantalla(elementos, indice) { elemento ->
-        // Solo una vez: el video puede terminar justo cuando se aprieta Atrás.
-        if (entrada.lifecycle.currentState == Lifecycle.State.RESUMED) {
+        if (!salio && entrada.lifecycle.currentState != Lifecycle.State.DESTROYED) {
+            salio = true
             modelo.enfocar(fila, elemento)
             navegador.popBackStack()
         }

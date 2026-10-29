@@ -44,7 +44,8 @@ class MiniaturasEnMemoria(
         try {
             generador.generar(elemento)
         } catch (e: Exception) {
-            Log.w(ETIQUETA, "Sin miniatura en memoria", e)
+            // Solo la clase del error: el mensaje trae la ruta del archivo del huésped (D-22).
+            Log.w(ETIQUETA, "Sin miniatura en memoria: ${e.javaClass.simpleName}")
             null
         }
 

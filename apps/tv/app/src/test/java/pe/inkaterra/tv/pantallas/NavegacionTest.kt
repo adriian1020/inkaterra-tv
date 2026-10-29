@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
+import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.Dispatchers
 import org.junit.Assert.assertTrue
@@ -149,6 +150,22 @@ class NavegacionTest {
         tecla(Key.DirectionDown)
         tecla(Key.Enter)
         atras()
+        foco("tarjeta-MUSICA-0")
+    }
+
+    // Con Inicio del control, la música se detiene y la pantalla se cierra (D-22): al volver a la app se
+    // está en el inicio, en la tarjeta de la canción.
+    @Test
+    fun laMusicaEnSegundoPlanoVuelveAlInicio() {
+        abrir()
+        tecla(Key.DirectionDown)
+        tecla(Key.DirectionDown)
+        tecla(Key.Enter)
+        regla.onNodeWithTag("video-titulo").assertExists()
+        regla.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
+        regla.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+        regla.waitForIdle()
+        regla.onNodeWithTag("video-titulo").assertDoesNotExist()
         foco("tarjeta-MUSICA-0")
     }
 
