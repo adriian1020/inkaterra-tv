@@ -119,9 +119,12 @@ class FlujoSprint2Test {
             tecla(KeyEvent.KEYCODE_DPAD_CENTER)
             assertTrue(segundosEnLaBarra() >= pausado)
 
-            // 3. Dos saltos de 10 s llegan al final (dura 25 s) y pasa solo al siguiente.
+            // 3. Dos saltos de 10 s con el botón «adelantar» llegan al final (dura 25 s) y pasa solo al
+            // siguiente. Con la barra a la vista, Derecha lleva el foco de pausar a adelantar (D-23).
             tecla(KeyEvent.KEYCODE_DPAD_RIGHT)
-            tecla(KeyEvent.KEYCODE_DPAD_RIGHT)
+            esperarFoco("video-adelantar")
+            tecla(KeyEvent.KEYCODE_DPAD_CENTER)
+            tecla(KeyEvent.KEYCODE_DPAD_CENTER)
             regla.waitUntilExactlyOneExists(hasTestTag("video-titulo") and hasText("vp9-20m"), 15_000)
 
             // 4. Atrás vuelve a la tarjeta del último video que se vio.

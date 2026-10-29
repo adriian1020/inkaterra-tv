@@ -1,4 +1,5 @@
-// Al terminar un video sigue el próximo de la fila, saltando las fotos (D-21).
+// Al terminar un video sigue el próximo de la fila, saltando las fotos (D-21); el botón «anterior»
+// va al de antes, también saltando las fotos (D-23).
 package pe.inkaterra.tv.pantallas.video
 
 import org.junit.Assert.assertEquals
@@ -23,4 +24,10 @@ class ListaVideosTest {
 
     @Test
     fun despuesDelUltimoNoHayMas() = assertNull(siguienteVideo(listOf(video1, video2), 1))
+
+    @Test
+    fun anteriorSaltaLasFotos() = assertEquals(0, anteriorVideo(listOf(video1, foto, video2), 2))
+
+    @Test
+    fun antesDelPrimeroNoHayNada() = assertNull(anteriorVideo(listOf(video1, video2), 0))
 }
