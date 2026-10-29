@@ -110,6 +110,7 @@ La app de TV agregaría un dominio más al edge (por ejemplo `tv.inkaterra.pe`) 
 | D-11 | El mismo contenido del hotel en todas las TVs (Fase 1) | Pedido del proyecto. La Fase 2 permite separar por hotel si hace falta |
 | D-12 | Marca tomada de la web: verde `#5A6A40`, Josefin Sans y Cinzel en lugar de Trajan Pro | Trajan Pro es de pago; Cinzel es libre y parecida |
 | D-20 | Inicio estilo Netflix: área destacada arriba y filas con miniaturas (Destacados, Videos, Fotos y Música), sin pantallas de sección | Pedido a Adrián. El detalle, y lo que no se toma de Netflix, en [decisiones.md](decisiones.md) |
+| D-21 | Retomar solo mientras la app está abierta, siguiente video al terminar y presentación de fotos que arranca sola | Elegido por Adrián; recordar posiciones en la TV dejaría rastro al siguiente huésped |
 
 ### Decisiones pendientes
 
@@ -443,8 +444,8 @@ El objetivo es no construir sobre supuestos. Todo lo que depende de la TV se pru
 
 **Sprint 2: video y fotos (9 al 13 nov)**
 
-- Reproductor de video con Media3: pausar, adelantar y retroceder con el control, retomar donde quedó y barra de información.
-- Visor de fotos y presentación automática con transiciones.
+- Reproductor de video con Media3: pausar, adelantar y retroceder con el control, retomar donde quedó y barra de información. Retomar solo mientras la app está abierta, y al terminar sigue el siguiente video de la fila (D-21).
+- Visor de fotos y presentación automática con transiciones. Arranca sola, 8 s por foto con fundido (D-21).
 - Archivos dañados o fuera de las reglas: mensaje claro, se saltan y quedan en el registro.
 
 **Se acepta cuando:** se ve un video 4K completo y una presentación de fotos en el Xiaomi sin trabas.
