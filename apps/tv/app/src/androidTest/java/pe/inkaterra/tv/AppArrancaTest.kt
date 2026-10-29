@@ -20,6 +20,6 @@ class AppArrancaTest {
 
     @Test
     fun abreElIdiomaOElInicio() {
-        regla.waitUntilExactlyOneExists(hasText("Bienvenido · Welcome") or hasTestTag("cambiar-idioma"), 10_000)
+        regla.waitUntilExactlyOneExists(hasText("Bienvenido · Welcome") or hasTestTag("barra-IDIOMA"), 10_000)
     }
 }

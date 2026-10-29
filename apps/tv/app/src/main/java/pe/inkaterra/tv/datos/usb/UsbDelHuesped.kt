@@ -1,6 +1,6 @@
 // La memoria USB del huésped (CU-17, D-22): escucha cuándo se conecta y se retira, la lee con las
 // mismas reglas que el contenido del hotel y deja el resultado en `estado`, que el inicio convierte
-// en la fila «Tu USB». Al retirarla avisa con `alRetirar`, para que se olvide todo lo de la
+// en la sección «Tu USB» (D-23). Al retirarla avisa con `alRetirar`, para que se olvide todo lo de la
 // memoria (D-10). Lo que pasa queda en el registro con la etiqueta «Usb», para la prueba a mano
 // con la depuración apagada (D-18); los nombres de los archivos, solo si `registrarArchivos`.
 package pe.inkaterra.tv.datos.usb
@@ -18,7 +18,7 @@ import pe.inkaterra.tv.BuildConfig
 import pe.inkaterra.tv.datos.biblioteca.Biblioteca
 import pe.inkaterra.tv.datos.biblioteca.CarpetaUsb
 import pe.inkaterra.tv.datos.biblioteca.ContenidoBiblioteca
-import pe.inkaterra.tv.datos.biblioteca.Elemento
+import pe.inkaterra.tv.datos.biblioteca.ContenidoUsb
 import pe.inkaterra.tv.datos.biblioteca.LectorMetadatos
 import pe.inkaterra.tv.datos.biblioteca.paraLaUsb
 import pe.inkaterra.tv.sistema.usb.VolumenUsb
@@ -37,7 +37,7 @@ sealed interface EstadoUsb {
 
     data class Lista(
         val volumen: VolumenUsb,
-        val elementos: List<Elemento>,
+        val contenido: ContenidoUsb,
         val rechazados: Int,
     ) : EstadoUsb
 
@@ -150,20 +150,24 @@ class UsbDelHuesped(
                         _estado.value = EstadoUsb.NoSeLee(volumen, MotivoUsb.ERROR)
                         return@launch
                     }
-                val elementos = contenido.paraLaUsb()
-                registrar(contenido, elementos, System.currentTimeMillis() - inicio)
-                _estado.value = EstadoUsb.Lista(volumen, elementos, contenido.rechazados.size)
+                val usb = contenido.paraLaUsb()
+                registrar(contenido, usb, System.currentTimeMillis() - inicio)
+                _estado.value = EstadoUsb.Lista(volumen, usb, contenido.rechazados.size)
             }
     }
 
     private fun registrar(
         contenido: ContenidoBiblioteca,
-        elementos: List<Elemento>,
+        usb: ContenidoUsb,
         ms: Long,
     ) {
-        Log.i(ETIQUETA, "${elementos.size} fotos y videos, ${contenido.rechazados.size} rechazados en $ms ms")
+        Log.i(
+            ETIQUETA,
+            "${usb.videos.size} videos, ${usb.fotos.size} fotos, ${usb.musica.size} canciones, " +
+                "${contenido.rechazados.size} rechazados en $ms ms",
+        )
         if (!registrarArchivos) return
-        elementos.forEach { Log.i(ETIQUETA, "${it.archivo.ruta} | ${it.tipo}") }
+        (usb.videos + usb.fotos + usb.musica).forEach { Log.i(ETIQUETA, "${it.archivo.ruta} | ${it.tipo}") }
         contenido.rechazados.forEach { Log.i(ETIQUETA, "${it.archivo.ruta} | rechazado: ${it.motivo}") }
     }
 }

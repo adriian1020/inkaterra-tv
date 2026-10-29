@@ -1,9 +1,10 @@
 // El modelo del inicio recuerda qué tarjeta tenía el foco, para devolverlo a lo último que se vio,
-// y lo mantiene en su tarjeta cuando la fila de la USB aparece o se va (D-22).
+// y pasa a la sección «Tu USB» al conectar la memoria si el inicio está a la vista (D-23).
 package pe.inkaterra.tv.pantallas.inicio
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -41,18 +42,27 @@ class InicioModeloTest {
     }
 
     @Test
-    fun alConectarLaUsbElFocoSigueEnSuTarjeta() {
-        modelo.enfocar(TipoFila.VIDEOS, elemento(TipoFila.VIDEOS, "Río Madre de Dios"))
+    fun alConectarConElInicioVisiblePasaAUsb() {
+        modelo.inicioVisible = true
         conectar()
-        assertEquals(Foco(2, 1), modelo.foco)
+        assertEquals(Seccion.USB, modelo.seccion)
+    }
+
+    // Si el huésped está viendo algo, no se lo interrumpe: la sección no cambia y la barra marca la memoria.
+    @Test
+    fun alConectarViendoAlgoSoloMarca() {
+        modelo.inicioVisible = false
+        conectar()
+        assertEquals(Seccion.INICIO, modelo.seccion)
+        assertTrue(modelo.hayMemoria())
     }
 
     @Test
-    fun alRetirarLaUsbElFocoVaALaPrimera() {
+    fun alRetirarVuelveAlInicio() {
+        modelo.inicioVisible = true
         conectar()
-        modelo.enfocar(TipoFila.USB, elemento(TipoFila.USB, "foto"))
-        assertEquals(Foco(1, 0), modelo.foco)
+        assertEquals(Seccion.USB, modelo.seccion)
         volumenes.retirar()
-        assertEquals(Foco(0, 0), modelo.foco)
+        assertEquals(Seccion.INICIO, modelo.seccion)
     }
 }

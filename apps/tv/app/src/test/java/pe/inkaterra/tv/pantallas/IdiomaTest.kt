@@ -73,8 +73,10 @@ class IdiomaTest {
     fun cambiarIdiomaDesdeElInicio() {
         val ajuste = AjusteIdiomaFalso(Idioma.ESPANOL)
         abrir(ajuste)
-        tecla(Key.DirectionUp)
-        regla.onNodeWithTag("cambiar-idioma").assertIsFocused()
+        tecla(Key.DirectionLeft)
+        tecla(Key.DirectionDown)
+        tecla(Key.DirectionDown)
+        regla.onNodeWithTag("barra-IDIOMA").assertIsFocused()
         tecla(Key.Enter)
         assertEquals(listOf(Idioma.INGLES), ajuste.cambios)
     }

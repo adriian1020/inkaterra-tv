@@ -61,7 +61,9 @@ class UsbDelHuespedTest {
         val usb = usb()
         volumenes.conectar(temporal.root)
         val lista = usb.estado.value as EstadoUsb.Lista
-        assertEquals(listOf("nueva", "media", "vieja"), lista.elementos.map { it.titulo })
+        assertEquals(listOf("nueva"), lista.contenido.videos.map { it.titulo })
+        assertEquals(listOf("media", "vieja"), lista.contenido.fotos.map { it.titulo })
+        assertEquals(listOf("canción"), lista.contenido.musica.map { it.titulo })
     }
 
     @Test
@@ -73,7 +75,7 @@ class UsbDelHuespedTest {
         volumenes.conectar(temporal.root)
         val lista = usb.estado.value as EstadoUsb.Lista
         assertEquals(1, lista.rechazados)
-        assertEquals(listOf("foto"), lista.elementos.map { it.titulo })
+        assertEquals(listOf("foto"), lista.contenido.fotos.map { it.titulo })
     }
 
     @Test

@@ -34,4 +34,6 @@
     <string name="video_retroceder">Back 10 seconds</string>
     <string name="video_adelantar">Forward 10 seconds</string>
     <string name="video_siguiente">Next video</string>
+    <string name="barra_inicio">Home</string>
+    <string name="usb_conecta">Plug your USB drive into the TV to see your photos, videos and music</string>
 </resources>
