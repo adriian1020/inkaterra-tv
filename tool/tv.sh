@@ -24,6 +24,9 @@ case "${1:-}" in
     conectar
     cd "$raiz/apps/tv"
     ANDROID_SERIAL="$TV" ./gradlew :app:installDebug --console=plain -q
+    # Permisos para leer la USB del huésped (D-22): se dan aquí, nunca con un diálogo en la TV.
+    adb -s "$TV" shell pm grant pe.inkaterra.tv android.permission.READ_MEDIA_IMAGES
+    adb -s "$TV" shell pm grant pe.inkaterra.tv android.permission.READ_MEDIA_VIDEO
     adb -s "$TV" shell am start -n pe.inkaterra.tv/.app.MainActivity >/dev/null
     echo "Instalada y abierta en $TV"
     ;;

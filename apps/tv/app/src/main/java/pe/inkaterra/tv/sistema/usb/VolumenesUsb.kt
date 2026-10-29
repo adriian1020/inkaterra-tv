@@ -13,20 +13,29 @@ data class VolumenUsb(
     val etiqueta: String?,
     val raiz: File?,
     val montado: Boolean,
+    // El de StorageVolume.getState(): «mounted», «unmountable» (un formato que no lee), «removed»…
+    val estado: String,
 )
+
+// Lo que la app necesita de las memorias; en las pruebas, un doble que se conecta a mano.
+interface Volumenes {
+    fun actuales(): List<VolumenUsb>
+
+    // El aviso llega en el hilo principal; cerrar el resultado deja de escuchar.
+    fun observar(alCambiar: (List<VolumenUsb>) -> Unit): AutoCloseable
+}
 
 class VolumenesUsb(
     private val context: Context,
-) {
+) : Volumenes {
     private val almacenamiento = context.getSystemService(StorageManager::class.java)
 
-    fun actuales(): List<VolumenUsb> =
+    override fun actuales(): List<VolumenUsb> =
         almacenamiento.storageVolumes
             .filter { it.isRemovable }
             .map { it.aVolumenUsb() }
 
-    // El aviso llega en el hilo principal; cerrar el resultado deja de escuchar.
-    fun observar(alCambiar: (List<VolumenUsb>) -> Unit): AutoCloseable {
+    override fun observar(alCambiar: (List<VolumenUsb>) -> Unit): AutoCloseable {
         val aviso =
             object : StorageManager.StorageVolumeCallback() {
                 override fun onStateChanged(volume: StorageVolume) = alCambiar(actuales())
@@ -41,5 +50,6 @@ class VolumenesUsb(
             etiqueta = getDescription(context),
             raiz = directory,
             montado = state == Environment.MEDIA_MOUNTED || state == Environment.MEDIA_MOUNTED_READ_ONLY,
+            estado = state,
         )
 }
