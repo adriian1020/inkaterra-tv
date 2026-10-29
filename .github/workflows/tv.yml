@@ -29,9 +29,11 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug --console=plain
+      - run: ./gradlew ktlintCheck lintDebug testDebugUnitTest assembleDebug assembleRelease --console=plain
       - uses: actions/upload-artifact@v4
         with:
           name: apk-tv
-          path: apps/tv/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            apps/tv/app/build/outputs/apk/debug/app-debug.apk
+            apps/tv/app/build/outputs/apk/release/app-release.apk
           retention-days: 7

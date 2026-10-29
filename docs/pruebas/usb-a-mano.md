@@ -6,16 +6,20 @@ lee lo que la app dejó en el registro de Android. Sirve igual para la TCL del p
 
 ## Antes
 
-1. Instalar la app con `tool/tv.sh instalar`: además de instalarla, le da los permisos de fotos y
-   videos (D-22). Sin ellos, la fila dice «Esta memoria no se puede leer en esta TV».
-2. Preparar las memorias. Lo ideal es una en cada formato: **FAT32**, **exFAT** y, si hay,
+1. Instalar la versión de prueba con `tool/tv.sh instalar depuracion`: es la que anota los nombres
+   de los archivos en el registro (D-23), y además le da a la app los permisos de fotos y videos
+   (D-22). Sin ellos, «Tu USB» dice «Esta memoria no se puede leer en esta TV».
+2. Agrandar el registro de Android: **Ajustes → Opciones de desarrollador → «Tamaños del búfer del
+   registrador» → 8 M** (el Xiaomi no deja más). Con el de 256 K que trae, el registro se pisa en
+   uno o dos minutos y se pierde la prueba.
+3. Preparar las memorias. Lo ideal es una en cada formato: **FAT32**, **exFAT** y, si hay,
    **NTFS**. En cada una:
    - fotos de un celular, en **JPG** y en **HEIC** (las de iPhone);
    - un video de celular, en **MP4** o **MOV**;
    - un video de más de 4K (si hay uno a mano), para ver el aviso de archivos que no se pueden ver;
    - una carpeta copiada desde una Mac (trae archivos `._foto.jpg`) o una memoria usada en
      Windows (trae `System Volume Information`).
-3. Anotar qué tiene cada memoria (cuántas fotos y videos), para compararlo con lo que muestra la TV.
+4. Anotar qué tiene cada memoria (cuántas fotos y videos), para compararlo con lo que muestra la TV.
 
 ## En la TV
 
