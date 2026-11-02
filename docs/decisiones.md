@@ -154,7 +154,7 @@ se decide durante los sprints siguientes.
 - **Alcance de la medición:** la app al frente se midió 3 minutos (el plan pedía 5); las
   promociones de horas se comprueban en el piloto del sprint 5.
 
-## D-18. Memorias USB: el Xiaomi las lee solo con la depuración apagada
+## D-18. Memorias USB: el Xiaomi las lee, con la depuración apagada
 
 - **Qué hay:** `VolumenesUsb` lista las memorias montadas (`StorageManager`, solo las
   extraíbles) y avisa cuando se conectan o se retiran. Lee la carpeta de la memoria directo,
@@ -179,12 +179,19 @@ se decide durante los sprints siguientes.
     adb necesita la depuración. La lectura se prueba a mano con la fila «Tu USB» del sprint 3
     (instalar, apagar la depuración, conectar la memoria) y en la TCL, que puede tener otro
     puerto o el mismo comportamiento.
-- **Pendiente para el sprint 3 (USB del huésped):** saber qué formatos lee (FAT32, exFAT, NTFS)
-  y si hace falta pedir permisos de fotos y videos.
-- **También pendiente:** si la lectura directa de la carpeta falla (Android 11 en adelante
-  limita el acceso), leer por `MediaStore` y anotar el permiso que hace falta
-  (`READ_MEDIA_IMAGES` y `READ_MEDIA_VIDEO`); y retirar la memoria mientras la app la lee, para
-  confirmar que no se cierra.
+- **Resultado de la prueba a mano (2 de noviembre):** con las dos depuraciones apagadas y la
+  versión de prueba, Adrián conectó una memoria **FAT32** con 3 videos MP4, 7 fotos JPG y
+  3 canciones MP3. La app la leyó **directo con `File`** (no hizo falta `MediaStore`) en 2,6 s,
+  sin rechazados, y pasó sola a «Tu USB». Se vieron las miniaturas, abrieron las fotos (con la
+  música del hotel de fondo) y los videos, y sonaron las canciones de la memoria. Al retirarla,
+  con algo abierto o con la sección a la vista, volvió a Inicio. Alcanzan los permisos
+  `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO` y `READ_MEDIA_AUDIO`, dados por adb al instalar (D-22,
+  D-23). El de audio se agregó porque, desde Android 13, sin él Android no le mostraría a la app
+  los archivos de música (no se probó sin él).
+- **Pendiente:** probar memorias **exFAT** y **NTFS**, fotos **HEIC** y un video de más de 4K (el
+  aviso de archivos que no se pueden ver); retirar la memoria en medio de la lectura de una
+  grande; y repetir todo en la TCL del piloto. El registro del Xiaomi no se pudo agrandar a 8 M
+  (sigue en 256 K), así que de la prueba solo quedaron las últimas líneas.
 
 ## D-19. Se acepta WEBM con VP9
 

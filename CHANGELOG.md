@@ -25,9 +25,23 @@ Formato [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y versiones
   video de la fila.
 - Las fotos se ven en una presentación que pasa sola cada 8 s con un fundido; Enter la pausa.
 - Al volver al inicio, el foco queda en lo último que se vio.
+- Música con el control: suena toda la fila desde la canción elegida, con botones para anterior,
+  pausa, siguiente, orden aleatorio y repetir (la lista, una canción o sin repetir), y con las
+  teclas de música del control.
+- La presentación de fotos suena con la música del hotel de fondo, en orden aleatorio.
+- Barra lateral a la izquierda, como la de Netflix, con Inicio, Tu USB e Idioma.
+- Sección «Tu USB»: al conectar una memoria, la app muestra sus videos, fotos y música en filas, de
+  lo más nuevo a lo más viejo, sin copiar nada; al retirarla vuelve a Inicio y no queda nada de
+  la memoria. Si no se puede leer o trae archivos que la TV no puede mostrar, lo dice.
+- Botones en el reproductor de video: anterior, retroceder 10 s, pausar, adelantar 10 s y
+  siguiente.
 
 ### Cambiado
 
+- La app se instala en su versión optimizada: arranca en menos de un segundo y recorre las filas
+  sin trabarse.
+- El idioma se cambia desde la barra lateral. Atrás en la primera fila lleva a la barra, y en la
+  barra cierra la app.
 - Ya no aparecen los videos que la TV no puede decodificar, como H.264 4:4:4.
 
 ### Corregido
