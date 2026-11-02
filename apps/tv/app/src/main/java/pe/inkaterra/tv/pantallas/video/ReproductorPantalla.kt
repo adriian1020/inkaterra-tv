@@ -132,6 +132,14 @@ fun ReproductorPantalla(
     var alEmpezar by remember { mutableStateOf(Cuadros()) }
     val foco = remember { FocusRequester() }
     val focoBotones = remember { FocusRequester() }
+    // La tecla apretada que atiende la pantalla (no los botones), hasta que se suelte. No es estado de
+    // Compose: no cambia lo que se dibuja.
+    val teclaDeLaPantalla =
+        remember {
+            object {
+                var value: Key? = null
+            }
+        }
 
     fun cuadros(): Cuadros {
         val contadores = player.videoDecoderCounters ?: return Cuadros()
@@ -298,17 +306,27 @@ fun ReproductorPantalla(
                         return@onPreviewKeyEvent true
                     }
                     val accion = teclas[evento.key] ?: return@onPreviewKeyEvent false
-                    // Con la barra a la vista, las flechas y Enter son de los botones; cada tecla vuelve a
-                    // contar los 5 s de la barra. Las teclas de medios funcionan siempre.
-                    if (barraVisible && evento.key !in teclasDeMedios) {
+                    // A quién le toca la tecla se decide al apretarla y vale hasta soltarla: con la barra a
+                    // la vista, las flechas y Enter son de los botones; si no, de la pantalla. Si se
+                    // decidiera con cada evento, al pausar con OK aparece la barra antes de soltarlo y el
+                    // botón de pausa recibe la tecla suelta y vuelve a reproducir; y una flecha mantenida
+                    // terminaba en «siguiente». Las teclas de medios son siempre de la pantalla.
+                    val repetida = evento.nativeKeyEvent.repeatCount > 0
+                    if (evento.type == KeyEventType.KeyDown && !repetida) {
+                        teclaDeLaPantalla.value =
+                            if (barraVisible && evento.key !in teclasDeMedios) null else evento.key
+                    }
+                    if (teclaDeLaPantalla.value != evento.key) {
+                        // Cada tecla de los botones vuelve a contar los 5 s de la barra.
                         if (evento.type == KeyEventType.KeyDown) toques++
                         return@onPreviewKeyEvent false
                     }
-                    // Enter mantenido no alterna una y otra vez; las flechas mantenidas sí saltan.
-                    val repetida = evento.nativeKeyEvent.repeatCount > 0
-                    if (evento.type == KeyEventType.KeyDown && !(repetida && accion == AccionVideo.ALTERNAR)) {
-                        hacer(accion)
+                    if (evento.type == KeyEventType.KeyUp) {
+                        teclaDeLaPantalla.value = null
+                        return@onPreviewKeyEvent true
                     }
+                    // Enter mantenido no alterna una y otra vez; las flechas mantenidas sí saltan (D-21).
+                    if (!(repetida && accion == AccionVideo.ALTERNAR)) hacer(accion)
                     true
                 }.focusable(),
         contentAlignment = Alignment.Center,

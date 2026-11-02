@@ -116,4 +116,33 @@ class ReproductorPantallaTest {
         regla.waitForIdle()
         assertEquals(videos(3)[0], salida)
     }
+
+    // Un video que falla y no tiene siguiente: la pantalla queda quieta y la barra se esconde a los 5 s.
+    private fun abrirConLaBarraEscondida() {
+        abrir(videos(1))
+        regla.mainClock.autoAdvance = false
+        regla.mainClock.advanceTimeBy(5_100)
+        regla.waitForIdle()
+        regla.onNodeWithTag("video-alternar").assertDoesNotExist()
+        // Un cuadro más para que el foco vuelva a la pantalla.
+        regla.mainClock.advanceTimeBy(100)
+        regla.waitForIdle()
+    }
+
+    // Mantener Derecha con la barra escondida sigue saltando 10 s (D-21): no recorre los botones.
+    @Test
+    fun mantenerDerechaConLaBarraEscondidaNoMueveElFoco() {
+        abrirConLaBarraEscondida()
+        regla.onRoot().performKeyInput { keyDown(Key.DirectionRight) }
+        regla.mainClock.advanceTimeBy(100)
+        regla.waitForIdle()
+        // Mantenida, la tecla se repite mientras pasa el tiempo.
+        regla.onRoot().performKeyInput { advanceEventTime(1_000) }
+        regla.mainClock.advanceTimeBy(100)
+        regla.waitForIdle()
+        regla.onRoot().performKeyInput { keyUp(Key.DirectionRight) }
+        regla.mainClock.advanceTimeBy(100)
+        regla.waitForIdle()
+        regla.onNodeWithTag("video-alternar").assertIsFocused()
+    }
 }
