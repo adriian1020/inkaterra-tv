@@ -36,6 +36,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.Key
@@ -88,21 +89,32 @@ fun InicioPantalla(
         BackHandler(enabled = !enBarra) { focoBarra.requestFocus() }
         Box(Modifier.fillMaxSize().padding(start = ANCHO_BARRA)) {
             if (filas.isEmpty()) {
-                Text(
-                    text =
-                        stringResource(
-                            if (seccion == Seccion.USB) textoAviso(estado.usb.aviso) else R.string.inicio_vacio,
-                        ),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = ColoresInkaterra.crema,
-                    textAlign = TextAlign.Center,
-                    modifier =
-                        Modifier
-                            .align(Alignment.Center)
-                            // A la izquierda deja lugar para la barra abierta, que se dibuja encima.
-                            .padding(start = 200.dp, end = 96.dp)
-                            .then(if (seccion == Seccion.USB) Modifier.testTag("aviso-usb") else Modifier),
-                )
+                // A la izquierda deja lugar para la barra abierta, que se dibuja encima.
+                Column(
+                    modifier = Modifier.align(Alignment.Center).padding(start = 200.dp, end = 96.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(
+                        text =
+                            stringResource(
+                                if (seccion == Seccion.USB) textoAviso(estado.usb.aviso) else R.string.inicio_vacio,
+                            ),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = ColoresInkaterra.crema,
+                        textAlign = TextAlign.Center,
+                        modifier = if (seccion == Seccion.USB) Modifier.testTag("aviso-usb") else Modifier,
+                    )
+                    // Si todo lo de la memoria se rechazó, el huésped sabe por qué no ve sus videos (CU-17 3b).
+                    val rechazados = estado.usb.rechazados
+                    if (seccion == Seccion.USB && rechazados > 0) {
+                        Text(
+                            text = pluralStringResource(R.plurals.usb_rechazados, rechazados, rechazados),
+                            style = MaterialTheme.typography.titleMedium,
+                            color = ColoresInkaterra.crema.copy(alpha = 0.7f),
+                            modifier = Modifier.padding(top = 16.dp),
+                        )
+                    }
+                }
                 // Sin tarjetas, el foco queda en la barra.
                 LaunchedEffect(seccion) { focoBarra.requestFocus() }
             } else {
@@ -239,6 +251,9 @@ private fun InicioConFilas(
                                         .onFocusChanged {
                                             if (it.isFocused) alEnfocar(Foco(f, c))
                                         }
+                                        // Arriba desde la primera fila no busca la barra (un OK ahí
+                                        // cambiaba el idioma sin querer).
+                                        .focusProperties { if (f == 0) up = FocusRequester.Cancel }
                                         // Izquierda desde la primera tarjeta abre la barra, en la opción
                                         // de la sección actual.
                                         .onPreviewKeyEvent { evento ->

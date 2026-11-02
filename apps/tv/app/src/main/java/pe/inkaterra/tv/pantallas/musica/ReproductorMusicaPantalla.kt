@@ -52,9 +52,11 @@ import androidx.media3.session.MediaSession
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import kotlinx.coroutines.delay
+import pe.inkaterra.tv.BuildConfig
 import pe.inkaterra.tv.R
 import pe.inkaterra.tv.app.ColoresInkaterra
 import pe.inkaterra.tv.datos.biblioteca.Elemento
+import pe.inkaterra.tv.datos.biblioteca.nombreParaRegistro
 import pe.inkaterra.tv.datos.miniaturas.FuenteMiniaturas
 import pe.inkaterra.tv.dominio.Repetir
 import pe.inkaterra.tv.dominio.siguiente
@@ -131,7 +133,11 @@ fun ReproductorMusicaPantalla(
                 }
 
                 override fun onPlayerError(error: PlaybackException) {
-                    Log.w(ETIQUETA, "${canciones[actual].archivo.nombre}: ${error.errorCodeName}", error)
+                    // El nombre y el detalle del error traen datos del archivo: de la USB, solo en la versión de
+                    // prueba (D-22).
+                    val archivo = canciones[actual].archivo
+                    val detalle = error.takeIf { BuildConfig.DEBUG || !archivo.deUsb }
+                    Log.w(ETIQUETA, "${archivo.nombreParaRegistro()}: ${error.errorCodeName}", detalle)
                     erroresSeguidos++
                     errorEn = actual
                 }

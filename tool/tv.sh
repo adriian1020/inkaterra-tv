@@ -31,7 +31,7 @@ case "${1:-}" in
     # de Android 13 (API 33) era un solo permiso; los de medios no existen y pm grant fallaría.
     sdk=$(adb -s "$TV" shell getprop ro.build.version.sdk | tr -d '\r')
     if [ "$sdk" -ge 33 ]; then
-      permisos="READ_MEDIA_IMAGES READ_MEDIA_VIDEO"
+      permisos="READ_MEDIA_IMAGES READ_MEDIA_VIDEO READ_MEDIA_AUDIO"
     else
       permisos="READ_EXTERNAL_STORAGE"
     fi
