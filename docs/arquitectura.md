@@ -50,7 +50,7 @@ flowchart LR
   biblioteca una vez; el foco y Atrás viven en `InicioPantalla`.
 - **Idioma** (`sistema/idioma/`): idioma por app de appcompat; desde Android 13 lo guarda el
   sistema.
-- `AbrirPantalla` es provisional: desde el sprint 2 solo la usa la música, hasta el sprint 3.
+- `AbrirPantalla` era provisional; el sprint 3 la reemplazó por el reproductor de música.
 
 ## Video y fotos (sprint 2)
 
@@ -83,4 +83,40 @@ flowchart LR
 - **Reglas de contenido:** desde el sprint 2, un video también se rechaza si la TV no tiene un
   decodificador para su perfil (`MediaCodecList`).
 
-Pendiente de los sprints: música y USB del huésped (sprint 3) y promociones (sprint 4).
+## Música, barra lateral y USB del huésped (sprint 3)
+
+```mermaid
+flowchart LR
+  barra[BarraLateral] -- Inicio / Tu USB --> inicio[InicioPantalla]
+  inicio -- Enter en una canción --> musica[ReproductorMusicaPantalla]
+  inicio -. secciones y foco .-> modelo[InicioModelo]
+  modelo --> usb[UsbDelHuesped]
+  usb --> volumenes[VolumenesUsb]
+  usb --> biblioteca[Biblioteca + CarpetaUsb]
+  fotos[VisorFotosPantalla] --> fondo[MusicaDeFondo]
+  musica --> sesion[ExoPlayer + MediaSession]
+```
+
+- **Música** (`pantallas/musica/`): un ExoPlayer con toda la fila y una `MediaSession` que vive lo
+  que vive la pantalla; no hay música en segundo plano (D-22). Al pasar a segundo plano, la
+  pantalla se cierra para que la tecla Play del control no la haga sonar fuera de la app.
+- **Música de fondo** (`pantallas/fotos/MusicaDeFondo.kt`): otro ExoPlayer, con la fila Música del
+  hotel en orden aleatorio; suena mientras la presentación avanza.
+- **Barra lateral y secciones** (`pantallas/inicio/`, D-23): `InicioModelo` guarda la sección
+  (Inicio o Tu USB) y la tarjeta con el foco de cada una. Al conectar la memoria pasa solo a «Tu
+  USB» si el inicio está al frente (lo sabe por el ciclo de vida de la entrada `"inicio"`); al
+  retirarla vuelve a Inicio. Las rutas no cambian: `deLaFila` busca en las filas del hotel y en
+  las de la USB (`TipoFila.USB_*`).
+- **USB del huésped** (`datos/usb/`, D-10, D-18): `UsbDelHuesped` escucha `VolumenesUsb` y lee la
+  memoria con la misma `Biblioteca` y las mismas reglas, sobre `CarpetaUsb` (que salta lo oculto y
+  las carpetas de sistema). Deja el resultado en un `StateFlow<EstadoUsb>`. Las miniaturas de la
+  memoria viven solo en memoria (`MiniaturasEnMemoria`); al retirarla, `Contenedor` olvida sus
+  posiciones, sus miniaturas y las fotos de Coil en memoria. Los permisos de medios se dan por
+  adb al instalar.
+- **Botones del video** (`pantallas/video/BotonesVideo.kt`): con la barra a la vista, las flechas
+  y Enter son de los botones; si no, de la pantalla, como antes. A quién le toca una tecla se
+  decide al apretarla y vale hasta soltarla. La pantalla atiende Atrás antes que el foco.
+- **Versión optimizada:** release con R8, firmada por ahora con la clave de depuración;
+  `tool/tv.sh instalar` instala esa y `tool/tv.sh instalar depuracion` la de prueba.
+
+Pendiente: promociones (sprint 4).

@@ -684,14 +684,18 @@ Una historia está terminada cuando:
 - [x]  Sprint 0 (28 de octubre): ver el [informe del sprint 0](informes/sprint-0.md) y las decisiones D-13 a D-19
 - [x]  Sprint 1 (28 de octubre): ver el [informe del sprint 1](informes/sprint-1.md) y la decisión D-20
 - [x]  Sprint 2 (28 de octubre): ver el [informe del sprint 2](informes/sprint-2.md) y la decisión D-21
+- [x]  Sprint 3 (29 de octubre al 2 de noviembre): ver el [informe del sprint 3](informes/sprint-3.md) y las decisiones D-22 y D-23
 - [x]  Subir los sprints 0 y 1 y unirlos a `main` (PR 1 y 2)
+- [x]  Subir el sprint 2 y unirlo a `main` (PR 3)
 - [x]  Mirar en la TV el paso de un video H.264 a uno HEVC: se ve bien (la captura por adb salía negra)
 - [x]  Videos de 60 Mbps que miden un poco más (60,6): el límite pasa a 62 Mbps (D-13)
 - [ ]  Mostrar el inicio estilo Netflix (las capturas del informe del sprint 1 o la app en el Xiaomi) a quien lo pidió y confirmarlo (D-20)
 - [x]  Por qué el Xiaomi no leía la memoria USB: el puerto solo lee con la depuración apagada (D-18)
-- [ ]  Probar la lectura de la memoria USB con la fila «Tu USB» (sprint 3) y en la TCL (D-18)
+- [x]  Probar la memoria USB en el Xiaomi: una FAT32 con videos, fotos y música se ve en «Tu USB» (D-18)
+- [ ]  Probar memorias exFAT y NTFS, fotos HEIC y la USB en la TCL (D-18)
 - [ ]  Decidir pantalla principal: app normal, equipo administrado o reemplazar el inicio de Google TV (D-14), antes del sprint 5
 - [ ]  Conseguir una TCL para el piloto del sprint 5
+- [ ]  Clave de firma del hotel para la versión optimizada, antes del piloto (D-23)
 
 ## Glosario
 
