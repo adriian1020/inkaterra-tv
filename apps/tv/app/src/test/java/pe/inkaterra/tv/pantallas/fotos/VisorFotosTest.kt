@@ -66,7 +66,7 @@ class VisorFotosTest {
     ) {
         regla.setContent {
             vistaDeCompose = LocalView.current
-            TemaInkaterra { VisorFotosPantalla(lista, inicial) { salida = it } }
+            TemaInkaterra { VisorFotosPantalla(lista, inicial, emptyList()) { salida = it } }
         }
         regla.waitForIdle()
     }

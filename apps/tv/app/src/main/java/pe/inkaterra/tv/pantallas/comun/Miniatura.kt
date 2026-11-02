@@ -17,22 +17,22 @@ import coil3.compose.AsyncImage
 import pe.inkaterra.tv.R
 import pe.inkaterra.tv.app.ColoresInkaterra
 import pe.inkaterra.tv.datos.biblioteca.Elemento
-import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.datos.miniaturas.FuenteMiniaturas
 import pe.inkaterra.tv.dominio.TipoContenido
-import java.io.File
 
 private sealed interface EstadoMiniatura {
     data object Cargando : EstadoMiniatura
 
     data class Lista(
-        val archivo: File?,
+        // Un File (hotel) o un Bitmap (USB); null si no hay imagen.
+        val imagen: Any?,
     ) : EstadoMiniatura
 }
 
 @Composable
 fun Miniatura(
     elemento: Elemento,
-    miniaturas: Miniaturas,
+    miniaturas: FuenteMiniaturas,
     modifier: Modifier = Modifier,
 ) {
     // Al cambiar de elemento vuelve a Cargando: si no, el área destacada seguía mostrando la imagen
@@ -50,9 +50,9 @@ fun Miniatura(
     ) {
         val lista = estado as? EstadoMiniatura.Lista ?: return@Box
         when {
-            lista.archivo != null ->
+            lista.imagen != null ->
                 AsyncImage(
-                    model = lista.archivo,
+                    model = lista.imagen,
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize(),

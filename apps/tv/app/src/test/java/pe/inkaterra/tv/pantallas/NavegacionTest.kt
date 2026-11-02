@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
@@ -15,8 +16,10 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
+import androidx.lifecycle.Lifecycle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.Dispatchers
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -27,11 +30,16 @@ import pe.inkaterra.tv.app.Navegacion
 import pe.inkaterra.tv.app.TemaInkaterra
 import pe.inkaterra.tv.datos.biblioteca.ArchivoLocal
 import pe.inkaterra.tv.datos.biblioteca.Elemento
+import pe.inkaterra.tv.datos.biblioteca.LectorFalso
 import pe.inkaterra.tv.datos.biblioteca.archivo
 import pe.inkaterra.tv.datos.miniaturas.GeneradorMiniatura
 import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.datos.usb.UsbDelHuesped
+import pe.inkaterra.tv.dominio.MetadatosVideo
 import pe.inkaterra.tv.dominio.PosicionesVideo
 import pe.inkaterra.tv.sistema.idioma.Idioma
+import pe.inkaterra.tv.sistema.usb.VolumenesFalsos
+import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
@@ -47,10 +55,11 @@ class NavegacionTest {
     private fun abrir(
         archivos: List<ArchivoLocal> = contenidoDePrueba,
         miniaturas: Miniaturas = miniaturasSinImagen(temporal.root),
+        usb: UsbDelHuesped = usbDePrueba(),
     ) {
         val biblioteca = bibliotecaDePrueba(archivos)
         val idioma = AjusteIdiomaFalso(Idioma.ESPANOL)
-        regla.setContent { TemaInkaterra { Navegacion(biblioteca, miniaturas, PosicionesVideo(), idioma) } }
+        regla.setContent { TemaInkaterra { Navegacion(biblioteca, miniaturas, PosicionesVideo(), idioma, usb) } }
         regla.waitForIdle()
     }
 
@@ -130,10 +139,81 @@ class NavegacionTest {
     }
 
     @Test
-    fun atrasEnLaPrimeraFilaSaleDeLaApp() {
+    fun alElegirUnaCancionSeAbreElReproductor() {
+        abrir()
+        tecla(Key.DirectionDown)
+        tecla(Key.DirectionDown)
+        tecla(Key.Enter)
+        regla.onNodeWithTag("video-titulo").assertTextEquals("Selva")
+    }
+
+    @Test
+    fun atrasEnLaMusicaVuelveASuTarjeta() {
+        abrir()
+        tecla(Key.DirectionDown)
+        tecla(Key.DirectionDown)
+        tecla(Key.Enter)
+        atras()
+        foco("tarjeta-MUSICA-0")
+    }
+
+    // Con Inicio del control, la música se detiene y la pantalla se cierra (D-22): al volver a la app se
+    // está en el inicio, en la tarjeta de la canción.
+    @Test
+    fun laMusicaEnSegundoPlanoVuelveAlInicio() {
+        abrir()
+        tecla(Key.DirectionDown)
+        tecla(Key.DirectionDown)
+        tecla(Key.Enter)
+        regla.onNodeWithTag("video-titulo").assertExists()
+        regla.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
+        regla.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+        regla.waitForIdle()
+        regla.onNodeWithTag("video-titulo").assertDoesNotExist()
+        foco("tarjeta-MUSICA-0")
+    }
+
+    // Atrás en la primera fila lleva a la barra lateral; en la barra, cierra la app (D-23).
+    @Test
+    fun atrasEnLaPrimeraFilaVaALaBarraYDespuesSale() {
         abrir()
         atras()
+        foco("barra-INICIO")
+        assertFalse(regla.activity.isFinishing)
+        atras()
         assertTrue(regla.activity.isFinishing)
+    }
+
+    @Test
+    fun izquierdaAbreLaBarra() {
+        abrir()
+        tecla(Key.DirectionLeft)
+        foco("barra-INICIO")
+    }
+
+    // Al salir de la barra con Derecha, el foco vuelve a la tarjeta donde estaba.
+    @Test
+    fun derechaDesdeLaBarraVuelveALaTarjeta() {
+        abrir()
+        tecla(Key.DirectionRight)
+        tecla(Key.DirectionLeft)
+        tecla(Key.DirectionLeft)
+        foco("barra-INICIO")
+        tecla(Key.DirectionRight)
+        foco("tarjeta-DESTACADOS-0")
+    }
+
+    @Test
+    fun tuUsbSinMemoriaPideConectarla() {
+        abrir()
+        tecla(Key.DirectionLeft)
+        tecla(Key.DirectionDown)
+        foco("barra-USB")
+        tecla(Key.Enter)
+        regla
+            .onNodeWithTag(
+                "aviso-usb",
+            ).assertTextEquals("Conecta tu memoria USB a la TV para ver tus fotos, videos y música")
     }
 
     // Mientras se pasa a lo abierto, el inicio ya no responde: un Enter de más no abre dos veces.
@@ -214,5 +294,65 @@ class NavegacionTest {
         } finally {
             soltar.countDown()
         }
+    }
+
+    // Una memoria con una foto, conectada con el inicio abierto. El aviso de Android llega en el
+    // hilo principal.
+    private fun conectarUsb(volumenes: VolumenesFalsos) {
+        val raiz = temporal.newFolder("usb")
+        File(raiz, "DCIM/foto.jpg").apply { parentFile?.mkdirs() }.writeText("x")
+        regla.runOnUiThread { volumenes.conectar(raiz) }
+        regla.waitForIdle()
+    }
+
+    // Con el inicio a la vista, al conectar la memoria se pasa sola a su sección (D-23).
+    @Test
+    fun alConectarLaUsbApareceSuSeccion() {
+        val volumenes = VolumenesFalsos()
+        abrir(usb = usbDePrueba(volumenes))
+        conectarUsb(volumenes)
+        regla.onNodeWithTag("fila-USB_FOTOS").assertExists()
+        foco("tarjeta-USB_FOTOS-0")
+    }
+
+    @Test
+    fun alRetirarLaUsbElVisorVuelveAlInicio() {
+        val volumenes = VolumenesFalsos()
+        abrir(usb = usbDePrueba(volumenes))
+        conectarUsb(volumenes)
+        foco("tarjeta-USB_FOTOS-0")
+        tecla(Key.Enter)
+        regla.onNodeWithTag("foto-titulo").assertExists()
+        regla.runOnUiThread { volumenes.retirar() }
+        regla.waitForIdle()
+        regla.onNodeWithTag("foto-titulo").assertDoesNotExist()
+        regla.onNodeWithTag("fila-DESTACADOS").assertIsDisplayed()
+        foco("tarjeta-DESTACADOS-0")
+    }
+
+    // Una memoria con solo videos que la TV no puede ver: el aviso dice además por qué (CU-17 3b).
+    @Test
+    fun memoriaConSoloRechazadosLoDice() {
+        val raiz = temporal.newFolder("usb-grande")
+        val video = File(raiz, "8k.mp4").apply { writeText("x") }
+        val lector = LectorFalso(mapOf(video.absolutePath to MetadatosVideo(7680, 4320, "video/hevc", 50_000_000)))
+        val volumenes = VolumenesFalsos()
+        abrir(usb = UsbDelHuesped(volumenes, lector, { true }, {}, true, Dispatchers.Unconfined))
+        regla.runOnUiThread { volumenes.conectar(raiz) }
+        regla.waitForIdle()
+        regla.onNodeWithTag("aviso-usb").assertExists()
+        regla.onNodeWithText("1 archivo no se puede ver en esta TV").assertExists()
+    }
+
+    // Arriba desde la primera fila no se va a la barra: un OK ahí podía cambiar el idioma sin querer.
+    @Test
+    @Config(qualifiers = "es-w960dp-h540dp")
+    fun arribaEnLaPrimeraFilaNoVaALaBarra() {
+        abrir()
+        foco("tarjeta-DESTACADOS-0")
+        tecla(Key.DirectionUp)
+        regla.onNodeWithTag("barra-IDIOMA").assertIsNotFocused()
+        regla.onNodeWithTag("barra-INICIO").assertIsNotFocused()
+        regla.onNodeWithTag("barra-USB").assertIsNotFocused()
     }
 }

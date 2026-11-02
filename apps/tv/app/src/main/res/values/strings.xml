@@ -16,4 +16,28 @@
     <string name="idioma_bienvenida" translatable="false">Bienvenido · Welcome</string>
     <string name="idioma_espanol" translatable="false">Español</string>
     <string name="idioma_ingles" translatable="false">English</string>
+    <string name="musica_no_reproduce">No se puede reproducir esta canción</string>
+    <string name="musica_anterior">Anterior</string>
+    <string name="musica_reproducir">Reproducir</string>
+    <string name="musica_pausar">Pausar</string>
+    <string name="musica_siguiente">Siguiente</string>
+    <string name="musica_aleatorio_si">Orden aleatorio activado</string>
+    <string name="musica_aleatorio_no">Orden aleatorio desactivado</string>
+    <string name="musica_repetir_lista">Repetir la lista</string>
+    <string name="musica_repetir_una">Repetir esta canción</string>
+    <string name="musica_sin_repetir">Sin repetir</string>
+    <string name="fila_usb">Tu USB</string>
+    <string name="usb_leyendo">Leyendo tu memoria…</string>
+    <string name="usb_vacia">No hay fotos, videos ni música en esta memoria</string>
+    <string name="usb_no_se_lee">Esta memoria no se puede leer en esta TV</string>
+    <plurals name="usb_rechazados">
+        <item quantity="one">%d archivo no se puede ver en esta TV</item>
+        <item quantity="other">%d archivos no se pueden ver en esta TV</item>
+    </plurals>
+    <string name="video_anterior">Video anterior</string>
+    <string name="video_retroceder">Retroceder 10 segundos</string>
+    <string name="video_adelantar">Adelantar 10 segundos</string>
+    <string name="video_siguiente">Video siguiente</string>
+    <string name="barra_inicio">Inicio</string>
+    <string name="usb_conecta">Conecta tu memoria USB a la TV para ver tus fotos, videos y música</string>
 </resources>

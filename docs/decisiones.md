@@ -154,7 +154,7 @@ se decide durante los sprints siguientes.
 - **Alcance de la medición:** la app al frente se midió 3 minutos (el plan pedía 5); las
   promociones de horas se comprueban en el piloto del sprint 5.
 
-## D-18. Memorias USB: código listo, prueba en la TV pendiente
+## D-18. Memorias USB: el Xiaomi las lee, con la depuración apagada
 
 - **Qué hay:** `VolumenesUsb` lista las memorias montadas (`StorageManager`, solo las
   extraíbles) y avisa cuando se conectan o se retiran. Lee la carpeta de la memoria directo,
@@ -164,14 +164,34 @@ se decide durante los sprints siguientes.
   que la PC lee bien) no apareció ni como dispositivo en el puerto USB de la caja, conectada
   directo; Android solo veía el adaptador wifi interno. No es un problema de formato: con un
   formato que no lee, Android igual mostraría el disco.
-- **Pendiente para el sprint 3 (USB del huésped):** repetir con otra memoria, con el Xiaomi en
-  su propio cargador o con un hub USB con alimentación, y luego en la TCL. Hasta entonces no
-  se sabe qué formatos lee (FAT32, exFAT, NTFS) ni si hace falta pedir permisos de fotos y
-  videos.
-- **También pendiente:** si la lectura directa de la carpeta falla (Android 11 en adelante
-  limita el acceso), leer por `MediaStore` y anotar el permiso que hace falta
-  (`READ_MEDIA_IMAGES` y `READ_MEDIA_VIDEO`); y retirar la memoria mientras la app la lee, para
-  confirmar que no se cierra.
+- **La causa (29 de octubre):** el puerto USB del Xiaomi hace dos cosas, pero no a la vez:
+  conectar la caja a una PC o leer lo que se le enchufa. Con la **depuración por USB o la
+  inalámbrica encendida**, queda del lado de la PC y no ve nada: una memoria, un disco externo
+  y un mouse no aparecieron en el bus, ni con un extensor ni conectados directo. Cambiar
+  «solo carga» por «transferencia de archivos» no cambia nada (eso es para cuando la caja se
+  conecta a una PC). Con las **dos depuraciones apagadas**, Adrián vio que la TV sí detecta la
+  memoria; al volver a encender la inalámbrica, dejó de verla.
+- **Qué significa:**
+  - **En el hotel:** las TV funcionan sin depuración, así que el puerto debería leer las
+    memorias de los huéspedes. Si más adelante se administran las TV por adb (fase 2), el
+    puerto dejaría de leer mientras la depuración esté encendida.
+  - **Para probar:** en el Xiaomi, `VolumenesUsbTest` no se puede correr, porque necesita adb y
+    adb necesita la depuración. La lectura se prueba a mano con la fila «Tu USB» del sprint 3
+    (instalar, apagar la depuración, conectar la memoria) y en la TCL, que puede tener otro
+    puerto o el mismo comportamiento.
+- **Resultado de la prueba a mano (2 de noviembre):** con las dos depuraciones apagadas y la
+  versión de prueba, Adrián conectó una memoria **FAT32** con 3 videos MP4, 7 fotos JPG y
+  3 canciones MP3. La app la leyó **directo con `File`** (no hizo falta `MediaStore`) en 2,6 s,
+  sin rechazados, y pasó sola a «Tu USB». Se vieron las miniaturas, abrieron las fotos (con la
+  música del hotel de fondo) y los videos, y sonaron las canciones de la memoria. Al retirarla,
+  con algo abierto o con la sección a la vista, volvió a Inicio. Alcanzan los permisos
+  `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO` y `READ_MEDIA_AUDIO`, dados por adb al instalar (D-22,
+  D-23). El de audio se agregó porque, desde Android 13, sin él Android no le mostraría a la app
+  los archivos de música (no se probó sin él).
+- **Pendiente:** probar memorias **exFAT** y **NTFS**, fotos **HEIC** y un video de más de 4K (el
+  aviso de archivos que no se pueden ver); retirar la memoria en medio de la lectura de una
+  grande; y repetir todo en la TCL del piloto. El registro del Xiaomi no se pudo agrandar a 8 M
+  (sigue en 256 K), así que de la prueba solo quedaron las últimas líneas.
 
 ## D-19. Se acepta WEBM con VP9
 
@@ -244,3 +264,64 @@ se decide durante los sprints siguientes.
   esta foto» y, en la presentación, pasa a la siguiente a los 3 s. Además, la biblioteca rechaza
   los videos que ningún decodificador de la TV puede abrir (por ejemplo H.264 4:4:4), y los
   rechazados quedan en el registro (`logcat`, etiqueta «Contenido»).
+
+## D-22. Música y USB del huésped
+
+- **Qué** (elegido por Adrián al planificar el sprint 3):
+  - **La música se detiene al salir.** Al elegir una canción suena toda la fila Música desde
+    ella; Atrás detiene la música y vuelve a la tarjeta de la canción que sonaba. No hay música
+    en segundo plano mientras se recorre el inicio.
+  - **Repetir la lista por omisión.** Al terminar la última canción vuelve a empezar. El huésped
+    puede cambiar a «repetir esta canción» o «sin repetir», y activar el orden aleatorio
+    (empieza apagado). Los dos vuelven a su valor cada vez que se abre una canción.
+  - **Música de fondo en las fotos:** las canciones de la fila Música, en orden aleatorio y en
+    bucle, en toda presentación, también en las fotos de la USB. Enter pausa la presentación y
+    la música. Si no hay música, la presentación pasa en silencio.
+  - **La USB en una sola fila.** «Tu USB» trae todas las fotos y videos de la memoria, de
+    cualquier carpeta, del más nuevo al más viejo; no se recorren carpetas. La música de la USB
+    no se muestra. **Cambia con D-23:** la USB pasa a ser una sección de la barra lateral, con
+    filas de videos, fotos y música.
+- **Decidido al planificar:**
+  - **Permisos de fotos y videos:** Android 14 los pide para leer la memoria. Se dan al instalar
+    la app por adb (`tool/tv.sh instalar`), como los demás ajustes de cada TV (D-16), y nunca se
+    le muestra un diálogo al huésped. Si faltan, la fila dice que la memoria no se puede leer y
+    el registro dice por qué.
+  - **Avisos en la fila:** si la memoria está vacía, no se puede leer (por ejemplo, NTFS) o trae
+    archivos que la TV no puede ver (como un video de más de 4K), la fila lo dice en palabras
+    simples (CU-17 1a y 3b).
+  - **Sin rastro (D-10):** las miniaturas de la USB viven solo en memoria. Al retirarla se
+    olvidan sus miniaturas, dónde retomar sus videos y las fotos que quedaron en memoria. Los
+    nombres de sus archivos van al registro solo en la versión de prueba.
+- **Por qué:** una TV de hotel no necesita música mientras se navega, y la carpeta de un celular
+  (`DCIM/Camera`, `WhatsApp/Media`…) es difícil de recorrer con el control; ordenar por fecha
+  pone primero lo que el huésped acaba de tomar.
+
+## D-23. Barra lateral, sección «Tu USB», botones del video y versión optimizada
+
+- **Qué** (pedido por Adrián después de probar el sprint 3 en el Xiaomi, el 29 de octubre):
+  - **Barra lateral a la izquierda, como la de Netflix**, con **Inicio**, **Tu USB** e
+    **Idioma**. Es una columna angosta de íconos que, al recibir el foco, se abre sobre el
+    contenido con los nombres. La sección actual se marca en verde y «Tu USB» lleva un punto si
+    hay una memoria conectada. El botón de idioma de arriba a la derecha pasa a la barra.
+  - **Moverse:** Izquierda desde la primera tarjeta de una fila abre la barra; Derecha vuelve a la
+    tarjeta donde estaba. Enter en Inicio o Tu USB cambia de sección. Atrás fuera de la primera
+    fila sube a la primera tarjeta; en la primera fila va a la barra; en la barra cierra la app.
+  - **«Tu USB» es una sección**, con el mismo diseño que el inicio: área destacada y filas
+    **Videos**, **Fotos** y **Música** de la memoria, de lo más nuevo a lo más viejo. La fila «Tu
+    USB» del inicio desaparece. La opción está siempre en la barra; sin memoria, la sección dice
+    «Conecta tu memoria USB a la TV para ver tus fotos, videos y música».
+  - **La música de la USB se muestra y suena** con el reproductor de música (cambia D-22). La
+    música de fondo de las fotos sigue siendo la del hotel.
+  - **Al conectar la memoria**, si el huésped está en el inicio, la app pasa sola a «Tu USB»; si
+    está viendo algo, no se interrumpe. **Al retirarla**, se vuelve a la sección Inicio.
+  - **Botones en el reproductor de video:** anterior, retroceder 10 s, pausar, adelantar 10 s y
+    siguiente, con la barra del video. Con la barra escondida, las teclas funcionan como antes
+    (D-21) y la muestran; con la barra visible, las flechas pasan de un botón a otro y Enter los
+    activa. «Anterior» vuelve al principio si pasaron más de 3 s; si no, va al video anterior.
+  - **Versión optimizada:** la app suma una versión «release» con R8, firmada por ahora con la
+    clave de depuración (la del hotel llega con el piloto). `tool/tv.sh instalar` instala esa;
+    `tool/tv.sh instalar depuracion`, la de prueba, que registra los nombres de los archivos.
+- **Por qué:** «esto va para una empresa: tenemos que ser organizados». Con la memoria en una sola
+  fila todo quedaba amontonado y sin la música; y sin botones nadie sabía que el video se podía
+  adelantar. En el Xiaomi, la versión de prueba arrancaba en 1,5 a 1,9 s y perdía el 61 % de los
+  cuadros al recorrer las filas; la optimizada, 0,3 a 0,7 s y el 2 %.

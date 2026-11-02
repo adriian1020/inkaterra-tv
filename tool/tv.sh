@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Conecta, instala y lee los registros de la app en la TV de pruebas, por la red.
 # El equipo sale de la variable TV (por omisión el Xiaomi TV Box S de Adrián).
-#   tool/tv.sh conectar | instalar | probar [clase] | logs
+#   tool/tv.sh conectar | instalar [depuracion] | probar [clase] | logs
+# «instalar» pone la versión optimizada (la de las TV, D-23); «instalar depuracion», la de prueba,
+# que además registra los nombres de los archivos de la USB.
 set -euo pipefail
 
 TV=${TV:-192.168.31.242:5555}
@@ -23,7 +25,19 @@ case "${1:-}" in
   instalar)
     conectar
     cd "$raiz/apps/tv"
-    ANDROID_SERIAL="$TV" ./gradlew :app:installDebug --console=plain -q
+    if [ "${2:-}" = "depuracion" ]; then tarea=installDebug; else tarea=installRelease; fi
+    ANDROID_SERIAL="$TV" ./gradlew ":app:$tarea" --console=plain -q
+    # Permisos para leer la USB del huésped (D-22): se dan aquí, nunca con un diálogo en la TV. Antes
+    # de Android 13 (API 33) era un solo permiso; los de medios no existen y pm grant fallaría.
+    sdk=$(adb -s "$TV" shell getprop ro.build.version.sdk | tr -d '\r')
+    if [ "$sdk" -ge 33 ]; then
+      permisos="READ_MEDIA_IMAGES READ_MEDIA_VIDEO READ_MEDIA_AUDIO"
+    else
+      permisos="READ_EXTERNAL_STORAGE"
+    fi
+    for permiso in $permisos; do
+      adb -s "$TV" shell pm grant pe.inkaterra.tv "android.permission.$permiso"
+    done
     adb -s "$TV" shell am start -n pe.inkaterra.tv/.app.MainActivity >/dev/null
     echo "Instalada y abierta en $TV"
     ;;
@@ -58,7 +72,7 @@ case "${1:-}" in
     adb -s "$TV" logcat --pid="$(adb -s "$TV" shell pidof pe.inkaterra.tv)"
     ;;
   *)
-    echo "uso: tool/tv.sh conectar | instalar | probar [clase] | logs" >&2
+    echo "uso: tool/tv.sh conectar | instalar [depuracion] | probar [clase] | logs" >&2
     exit 2
     ;;
 esac

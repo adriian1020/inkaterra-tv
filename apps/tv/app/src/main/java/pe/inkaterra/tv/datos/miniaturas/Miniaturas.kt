@@ -22,14 +22,14 @@ class Miniaturas(
     private val generador: GeneradorMiniatura,
     private val carpeta: File,
     private val despachador: CoroutineDispatcher = Dispatchers.IO,
-) {
+) : FuenteMiniaturas {
     private val permisos = Semaphore(A_LA_VEZ)
 
     // Un candado por archivo: el área destacada y su tarjeta piden la misma miniatura a la vez, y
     // la segunda espera a la primera en vez de decodificar el mismo video otra vez.
     private val candados = ConcurrentHashMap<String, Mutex>()
 
-    suspend fun de(elemento: Elemento): File? =
+    override suspend fun de(elemento: Elemento): File? =
         withContext(despachador) {
             val clave = clave(elemento.archivo)
             val destino = File(carpeta, "$clave.jpg")

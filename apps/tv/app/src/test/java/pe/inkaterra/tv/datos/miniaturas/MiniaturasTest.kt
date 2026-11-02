@@ -148,4 +148,20 @@ class MiniaturasTest {
         }
         assertEquals(1, generador.llamadas.get())
     }
+
+    // Las de la USB del huésped (D-10): en memoria, sin tocar el disco, y se borran al retirarla.
+    @Test
+    fun enMemoriaNoEscribeEnDisco() =
+        runTest {
+            val bitmap = Bitmap.createBitmap(4, 4, Bitmap.Config.ARGB_8888)
+            val generador = GeneradorFalso { bitmap }
+            val m = MiniaturasEnMemoria(generador, Dispatchers.Unconfined)
+            assertEquals(bitmap, m.de(elemento()))
+            assertEquals(bitmap, m.de(elemento()))
+            assertEquals(1, generador.llamadas.get())
+            m.limpiar()
+            m.de(elemento())
+            assertEquals(2, generador.llamadas.get())
+            assertTrue(temporal.root.listFiles().isNullOrEmpty())
+        }
 }

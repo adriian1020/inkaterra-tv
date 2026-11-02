@@ -12,4 +12,28 @@
     <string name="video_no_reproduce">This video can’t be played</string>
     <string name="presentacion_pausada">Paused</string>
     <string name="foto_no_abre">This photo can’t be opened</string>
+    <string name="musica_no_reproduce">This song can’t be played</string>
+    <string name="musica_anterior">Previous</string>
+    <string name="musica_reproducir">Play</string>
+    <string name="musica_pausar">Pause</string>
+    <string name="musica_siguiente">Next</string>
+    <string name="musica_aleatorio_si">Shuffle on</string>
+    <string name="musica_aleatorio_no">Shuffle off</string>
+    <string name="musica_repetir_lista">Repeat all</string>
+    <string name="musica_repetir_una">Repeat this song</string>
+    <string name="musica_sin_repetir">Repeat off</string>
+    <string name="fila_usb">Your USB</string>
+    <string name="usb_leyendo">Reading your drive…</string>
+    <string name="usb_vacia">There are no photos, videos or music on this drive</string>
+    <string name="usb_no_se_lee">This drive can’t be read on this TV</string>
+    <plurals name="usb_rechazados">
+        <item quantity="one">%d file can’t be shown on this TV</item>
+        <item quantity="other">%d files can’t be shown on this TV</item>
+    </plurals>
+    <string name="video_anterior">Previous video</string>
+    <string name="video_retroceder">Back 10 seconds</string>
+    <string name="video_adelantar">Forward 10 seconds</string>
+    <string name="video_siguiente">Next video</string>
+    <string name="barra_inicio">Home</string>
+    <string name="usb_conecta">Plug your USB drive into the TV to see your photos, videos and music</string>
 </resources>

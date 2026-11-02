@@ -7,8 +7,11 @@ import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
@@ -77,5 +80,69 @@ class ReproductorPantallaTest {
         regla.onRoot().performKeyInput { pressKey(Key.Enter) }
         regla.waitForIdle()
         assertFalse(pantallaEncendida())
+    }
+
+    private fun tecla(t: Key) {
+        regla.onRoot().performKeyInput { pressKey(t) }
+        regla.waitForIdle()
+    }
+
+    // Con la barra visible, las flechas recorren los botones en vez de saltar 10 s (D-23).
+    @Test
+    fun conLaBarraVisibleLasFlechasMuevenElFoco() {
+        abrir(videos(3))
+        regla.onNodeWithTag("video-alternar").assertIsFocused()
+        tecla(Key.DirectionRight)
+        regla.onNodeWithTag("video-adelantar").assertIsFocused()
+    }
+
+    @Test
+    fun botonSiguientePasaAlSiguiente() {
+        abrir(videos(3))
+        tecla(Key.DirectionRight)
+        tecla(Key.DirectionRight)
+        regla.onNodeWithTag("video-siguiente").assertIsFocused()
+        tecla(Key.Enter)
+        regla.onNodeWithTag("video-titulo").assertTextEquals("Roto 2")
+    }
+
+    // Con el foco en los botones, un solo Atrás sale del video. En la TV, Compose usaba el primer Atrás
+    // para sacar el foco de los botones a la pantalla, y recién el segundo salía (D-23).
+    @Test
+    fun atrasConElFocoEnLosBotonesSale() {
+        abrir(videos(3))
+        regla.onNodeWithTag("video-alternar").assertIsFocused()
+        regla.onRoot().performKeyInput { pressKey(Key.Back) }
+        regla.waitForIdle()
+        assertEquals(videos(3)[0], salida)
+    }
+
+    // Un video que falla y no tiene siguiente: la pantalla queda quieta y la barra se esconde a los 5 s.
+    private fun abrirConLaBarraEscondida() {
+        abrir(videos(1))
+        regla.mainClock.autoAdvance = false
+        regla.mainClock.advanceTimeBy(5_100)
+        regla.waitForIdle()
+        regla.onNodeWithTag("video-alternar").assertDoesNotExist()
+        // Un cuadro más para que el foco vuelva a la pantalla.
+        regla.mainClock.advanceTimeBy(100)
+        regla.waitForIdle()
+    }
+
+    // Mantener Derecha con la barra escondida sigue saltando 10 s (D-21): no recorre los botones.
+    @Test
+    fun mantenerDerechaConLaBarraEscondidaNoMueveElFoco() {
+        abrirConLaBarraEscondida()
+        regla.onRoot().performKeyInput { keyDown(Key.DirectionRight) }
+        regla.mainClock.advanceTimeBy(100)
+        regla.waitForIdle()
+        // Mantenida, la tecla se repite mientras pasa el tiempo.
+        regla.onRoot().performKeyInput { advanceEventTime(1_000) }
+        regla.mainClock.advanceTimeBy(100)
+        regla.waitForIdle()
+        regla.onRoot().performKeyInput { keyUp(Key.DirectionRight) }
+        regla.mainClock.advanceTimeBy(100)
+        regla.waitForIdle()
+        regla.onNodeWithTag("video-alternar").assertIsFocused()
     }
 }

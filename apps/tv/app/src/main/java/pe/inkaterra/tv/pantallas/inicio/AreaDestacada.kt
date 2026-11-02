@@ -24,14 +24,14 @@ import androidx.tv.material3.Text
 import pe.inkaterra.tv.R
 import pe.inkaterra.tv.app.ColoresInkaterra
 import pe.inkaterra.tv.datos.biblioteca.Elemento
-import pe.inkaterra.tv.datos.miniaturas.Miniaturas
+import pe.inkaterra.tv.datos.miniaturas.FuenteMiniaturas
 import pe.inkaterra.tv.dominio.TipoContenido
 import pe.inkaterra.tv.pantallas.comun.Miniatura
 
 @Composable
 fun AreaDestacada(
     elemento: Elemento,
-    miniaturas: Miniaturas,
+    miniaturas: FuenteMiniaturas,
     modifier: Modifier = Modifier,
 ) {
     Box(modifier.testTag("area-destacada")) {

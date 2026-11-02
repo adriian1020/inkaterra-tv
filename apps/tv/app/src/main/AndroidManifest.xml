@@ -10,6 +10,19 @@
         android:name="android.hardware.touchscreen"
         android:required="false" />
 
+    <!-- Para leer las fotos y videos de la memoria USB del huésped (D-22). Se dan al instalar por adb
+         (tool/tv.sh instalar); al huésped nunca se le muestra el diálogo. Antes de Android 13 era
+         un solo permiso. El de «fotos seleccionadas» de Android 14 se declara porque lo pide lint;
+         como los otros se dan completos, no cambia nada. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <!-- Para la música de la USB (D-23): sin este, Android no le muestra a la app los archivos de audio. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
     <application
         android:banner="@drawable/banner"
         android:icon="@mipmap/icono"
